@@ -4,6 +4,7 @@ import {SceneSelectMode} from "./scenes/scene_select_mode";
 import {SceneSelectGame} from "./scenes/scene_select_game";
 import {SceneMatching} from "./scenes/scene_matching";
 import {SceneSearchRoom} from "./scenes/scene_search_room";
+import {SceneFriendMatch} from "./scenes/scene_friend_match";
 
 export const COLOR_FIRST = 0x45eba5
 export const COLOR_SECOND = 0x21aba5
@@ -20,6 +21,11 @@ export const COLOR_GAME_FOURTH = 0x5C2626
 
 export const BG_MENU = 0
 export const BG_IN_GAME = 1
+
+export const MODE_NORMAL = 0
+export const MODE_CPU = 1
+export const MODE_RATING = 2
+export const MODE_FRIEND_MATCH = 3
 
 export const GAME_SPEED = {
     title: 'スピード',
@@ -62,7 +68,7 @@ const config = {
     type: Phaser.AUTO,
     width: WIDTH,
     height: HEIGHT,
-    scene: [SceneTitle, SceneSelectMode, SceneSelectGame, SceneMatching, SceneSearchRoom],
+    scene: [SceneTitle, SceneSelectMode, SceneSelectGame, SceneMatching, SceneSearchRoom, SceneFriendMatch],
 }
 
 const game = new Phaser.Game(config)

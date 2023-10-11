@@ -1,4 +1,4 @@
-import {SCENE_SEARCH_ROOM, SCENE_SELECT_MODE, WIDTH} from "./scene_loader";
+import {SCENE_FRIEND_MATCH, SCENE_SEARCH_ROOM, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawBlur, drawWindow} from "../components";
 import {COLOR_DIVIDER, COLOR_FIRST, COLOR_FOURTH, COLOR_SECOND} from "../game";
 
@@ -130,7 +130,7 @@ export class SceneSearchRoom extends Phaser.Scene {
         objBtnEnter.setOnClick(() => handleJoin())
 
         objBtnBack.setOnClick(() => {
-            this.scene.start(SCENE_SELECT_MODE)
+            this.scene.start(SCENE_FRIEND_MATCH)
         })
     }
 }
