@@ -51,5 +51,6 @@ export const createButton = (scene, x, y, width, height, color, text, {fontSize 
         objRect.setFillStyle(color)
         objText.setColor('#212121')
     })
+    container.setOnClick = (handleClick) => container.on('pointerup', handleClick)
     return container
 }

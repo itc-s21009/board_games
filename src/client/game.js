@@ -28,4 +28,3 @@ const config = {
 }
 
 const game = new Phaser.Game(config)
-Phaser.GameObjects.Container.prototype.setOnClick = (handleClick) => this.on('pointerup', handleClick)
