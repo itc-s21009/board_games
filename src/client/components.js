@@ -60,7 +60,7 @@ export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
             objects.forEach((obj) => obj.destroy())
         })
         objBtnPlay.setOnClick(() => {
-            scene.scene.start(SCENE_MATCHING, {gameData: gameData, roomId: 12345})
+            scene.scene.start(SCENE_MATCHING, {gameData: gameData})
         })
     }
 }

@@ -1,6 +1,6 @@
 import {SCENE_MATCHING, SCENE_SELECT_GAME, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawGameDetail} from "../components";
-import {COLOR_FOURTH, COLOR_SECOND} from "../game";
+import {COLOR_DIVIDER, COLOR_FOURTH, COLOR_SECOND} from "../game";
 
 export class SceneMatching extends Phaser.Scene {
     constructor() {
@@ -16,6 +16,7 @@ export class SceneMatching extends Phaser.Scene {
         drawBackground(this)
         if (this.roomId) {
             this.add.rectangle(WIDTH / 2, 66, 295, 59, COLOR_FOURTH)
+                .setStrokeStyle(1, COLOR_DIVIDER)
             createText(this, WIDTH / 2, 66, `部屋番号：${this.roomId}`, {color: 0xFFFFFF, fontSize: 32})
                 .setOrigin(0.5, 0.5)
         }
