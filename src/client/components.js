@@ -40,7 +40,7 @@ export const drawWindow = (scene, x, y, width, height, color) => {
 export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
     const {title, description} = gameData
     const objBlur = drawBlur(scene)
-    const objWindow = drawWindow(scene, 10, 110, 356, 436, COLOR_FIRST)
+    const objWindow = drawWindow(scene, WIDTH / 2, 110, 356, 436, COLOR_FIRST)
 
     const objTextTitle = createText(scene, WIDTH / 2, 131, title, {fontSize: 36})
     const objTextDesc = createText(scene, WIDTH / 2, 470, description, {fontSize: 20})
