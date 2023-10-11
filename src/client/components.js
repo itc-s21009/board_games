@@ -4,7 +4,7 @@ import {
     COLOR_FIRST,
     COLOR_GAME_FIRST, COLOR_SECOND
 } from "./game";
-import {HEIGHT, WIDTH} from "./scenes/scene_loader";
+import {HEIGHT, SCENE_MATCHING, WIDTH} from "./scenes/scene_loader";
 
 export const drawBackground = (scene, bgType=BG_MENU) => {
     const graphics = scene.add.graphics()
@@ -42,19 +42,29 @@ export const drawGameDetail = (scene, gameData) => {
     objTextDesc
         .setAlign('center') // 中央揃え
         .setOrigin(0.5, 1)
-    const objBtnBack = createButton(scene, 20 + 90/2, 476, 90, 50, COLOR_SECOND, '戻る' , {fontSize: 24})
-    const objBtnPlay = createButton(scene, 130 + 216/2, 476, 216, 50, COLOR_SECOND, 'プレイ', {fontSize: 24})
-
-    objBtnBack.setOnClick(() => {
-        [
-            objBlur,
-            gWindow,
-            objTextTitle,
-            objTextDesc,
-            objBtnBack,
-            objBtnPlay
-        ].forEach((obj) => obj.destroy())
-    })
+    const objects = [
+        objBlur,
+        gWindow,
+        objTextTitle,
+        objTextDesc,
+    ]
+    if (scene.scene.key === SCENE_MATCHING) {
+        const objBtnBack = createButton(scene, WIDTH / 2, 476, 325, 50, COLOR_SECOND, '閉じる', {fontSize: 24})
+        objects.push(objBtnBack)
+        objBtnBack.setOnClick(() => {
+            objects.forEach((obj) => obj.destroy())
+        })
+    } else {
+        const objBtnBack = createButton(scene, 20 + 90 / 2, 476, 90, 50, COLOR_SECOND, '戻る', {fontSize: 24})
+        const objBtnPlay = createButton(scene, 130 + 216 / 2, 476, 216, 50, COLOR_SECOND, 'プレイ', {fontSize: 24})
+        objects.push(objBtnBack, objBtnPlay)
+        objBtnBack.setOnClick(() => {
+            objects.forEach((obj) => obj.destroy())
+        })
+        objBtnPlay.setOnClick(() => {
+            scene.scene.start(SCENE_MATCHING, {gameData: gameData, roomId: 12345})
+        })
+    }
 }
 
 export const createText = (scene, x, y, text, {color = 0x212121, fontSize = 24} = {}) => {

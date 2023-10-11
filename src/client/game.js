@@ -2,6 +2,7 @@ import {SceneTitle} from "./scenes/scene_title.js";
 import {HEIGHT, WIDTH} from "./scenes/scene_loader.js";
 import {SceneSelectMode} from "./scenes/scene_select_mode";
 import {SceneSelectGame} from "./scenes/scene_select_game";
+import {SceneMatching} from "./scenes/scene_matching";
 
 export const COLOR_FIRST = 0x45eba5
 export const COLOR_SECOND = 0x21aba5
@@ -21,11 +22,15 @@ export const BG_IN_GAME = 1
 
 export const GAME_SPEED = {
     title: 'スピード',
-    description: '２人で行うゲームです。\n場のカードを数字が繋がるカードを\n出していき、全部出すと勝利です。'
+    description: '２人で行うゲームです。\n場のカードを数字が繋がるカードを\n出していき、全部出すと勝利です。',
+    minPlayers: 2,
+    maxPlayers: 2
 }
 export const GAME_SINKEI = {
     title: '神経衰弱',
-    description: '２〜４人で行うゲームです。\n場のカードを２枚めくって\n同じ数字であればゲットできます。\nゲットした枚数が多い人が勝利です。'
+    description: '２〜４人で行うゲームです。\n場のカードを２枚めくって\n同じ数字であればゲットできます。\nゲットした枚数が多い人が勝利です。',
+    minPlayers: 2,
+    maxPlayers: 4
 }
 export const GAME_DAIFUGO = {
     title: '大富豪',
@@ -39,11 +44,15 @@ export const GAME_DAIFUGO = {
         '\n・１０捨て' +
         '\n・Ｊバック' +
         '\n・Ｑボンバー' +
-        '\n・Ｋリバース'
+        '\n・Ｋリバース',
+    minPlayers: 4,
+    maxPlayers: 4
 }
 export const GAME_OSERO = {
     title: 'オセロ',
-    description: '２人で行うゲームです。\nお馴染みのルールで遊べます。'
+    description: '２人で行うゲームです。\nお馴染みのルールで遊べます。',
+    minPlayers: 2,
+    maxPlayers: 2
 }
 
 const socket = io()
@@ -52,7 +61,7 @@ const config = {
     type: Phaser.AUTO,
     width: WIDTH,
     height: HEIGHT,
-    scene: [SceneTitle, SceneSelectMode, SceneSelectGame],
+    scene: [SceneTitle, SceneSelectMode, SceneSelectGame, SceneMatching],
 }
 
 const game = new Phaser.Game(config)
