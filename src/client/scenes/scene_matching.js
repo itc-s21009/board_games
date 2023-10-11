@@ -25,7 +25,7 @@ export class SceneMatching extends Phaser.Scene {
         createText(this, WIDTH / 2, 358, `待機中：1/${this.gameData.maxPlayers}人`, {fontSize: 32})
         const btnInfo = createButton(this, 338, 297, 32, 32, COLOR_SECOND, '？', {fontSize: 24})
         btnInfo.setOnClick(() => {
-            drawGameDetail(this, this.gameData)
+            drawGameDetail(this, this.gameData, true)
         })
         const btnBack = createButton(this, WIDTH / 2, 489, 200, 100, COLOR_SECOND,'キャンセル', {fontSize: 32})
         btnBack.setOnClick(() => {

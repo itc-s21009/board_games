@@ -30,7 +30,7 @@ export const drawBlur = (scene) => {
     return objBlur
 }
 
-export const drawGameDetail = (scene, gameData) => {
+export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
     const {title, description} = gameData
     const objBlur = drawBlur(scene)
     const gWindow = scene.add.graphics()
@@ -48,7 +48,7 @@ export const drawGameDetail = (scene, gameData) => {
         objTextTitle,
         objTextDesc,
     ]
-    if (scene.scene.key === SCENE_MATCHING) {
+    if (withoutPlayButton) {
         const objBtnBack = createButton(scene, WIDTH / 2, 476, 325, 50, COLOR_SECOND, '閉じる', {fontSize: 24})
         objects.push(objBtnBack)
         objBtnBack.setOnClick(() => {
