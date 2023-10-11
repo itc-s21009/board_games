@@ -3,6 +3,7 @@ import {HEIGHT, WIDTH} from "./scenes/scene_loader.js";
 import {SceneSelectMode} from "./scenes/scene_select_mode";
 import {SceneSelectGame} from "./scenes/scene_select_game";
 import {SceneMatching} from "./scenes/scene_matching";
+import {SceneSearchRoom} from "./scenes/scene_search_room";
 
 export const COLOR_FIRST = 0x45eba5
 export const COLOR_SECOND = 0x21aba5
@@ -61,7 +62,7 @@ const config = {
     type: Phaser.AUTO,
     width: WIDTH,
     height: HEIGHT,
-    scene: [SceneTitle, SceneSelectMode, SceneSelectGame, SceneMatching],
+    scene: [SceneTitle, SceneSelectMode, SceneSelectGame, SceneMatching, SceneSearchRoom],
 }
 
 const game = new Phaser.Game(config)

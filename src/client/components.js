@@ -30,6 +30,13 @@ export const drawBlur = (scene) => {
     return objBlur
 }
 
+export const drawWindow = (scene, x, y, width, height, color) => {
+    const gWindow = scene.add.graphics()
+    gWindow.fillGradientStyle(color, color, 0xFFFFFF, 0xFFFFFF)
+    gWindow.fillRect(x - width / 2, y, width, height)
+    return gWindow
+}
+
 export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
     const {title, description} = gameData
     const objBlur = drawBlur(scene)
@@ -42,7 +49,7 @@ export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
         .setOrigin(0.5, 1)
     const objects = [
         objBlur,
-        gWindow,
+        objWindow,
         objTextTitle,
         objTextDesc,
     ]
