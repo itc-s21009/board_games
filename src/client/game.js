@@ -19,6 +19,33 @@ export const COLOR_GAME_FOURTH = 0x5C2626
 export const BG_MENU = 0
 export const BG_IN_GAME = 1
 
+export const GAME_SPEED = {
+    title: 'スピード',
+    description: '２人で行うゲームです。\n場のカードを数字が繋がるカードを\n出していき、全部出すと勝利です。'
+}
+export const GAME_SINKEI = {
+    title: '神経衰弱',
+    description: '２〜４人で行うゲームです。\n場のカードを２枚めくって\n同じ数字であればゲットできます。\nゲットした枚数が多い人が勝利です。'
+}
+export const GAME_DAIFUGO = {
+    title: '大富豪',
+    description: '４人で行うゲームです。\nルールは以下の通りです。' +
+        '\n・スペード３' +
+        '\n・４止め' +
+        '\n・５スキップ' +
+        '\n・７渡し' +
+        '\n・８ぎり' +
+        '\n・９栗拾い' +
+        '\n・１０捨て' +
+        '\n・Ｊバック' +
+        '\n・Ｑボンバー' +
+        '\n・Ｋリバース'
+}
+export const GAME_OSERO = {
+    title: 'オセロ',
+    description: '２人で行うゲームです。\nお馴染みのルールで遊べます。'
+}
+
 const socket = io()
 
 const config = {

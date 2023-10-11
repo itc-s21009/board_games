@@ -1,11 +1,8 @@
 import {
     BG_IN_GAME,
     BG_MENU,
-    COLOR_DIVIDER,
     COLOR_FIRST,
-    COLOR_FOURTH,
-    COLOR_GAME_FIRST,
-    COLOR_TEXT_PRIMARY
+    COLOR_GAME_FIRST, COLOR_SECOND
 } from "./game";
 import {HEIGHT, WIDTH} from "./scenes/scene_loader";
 
@@ -24,6 +21,40 @@ export const drawBackground = (scene, bgType=BG_MENU) => {
     const color = bgTypeToColor(bgType)
     graphics.fillGradientStyle(color, color,0xFFFFFF, 0xFFFFFF)
     graphics.fillRect(0, 0, WIDTH+1, HEIGHT+1)
+    return graphics
+}
+
+export const drawBlur = (scene) => {
+    const objBlur = scene.add.rectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT, 0x000000, 0.5)
+    objBlur.setInteractive()
+    return objBlur
+}
+
+export const drawGameDetail = (scene, gameData) => {
+    const {title, description} = gameData
+    const objBlur = drawBlur(scene)
+    const gWindow = scene.add.graphics()
+    gWindow.fillGradientStyle(COLOR_FIRST, COLOR_FIRST, 0xFFFFFF, 0xFFFFFF)
+    gWindow.fillRect(10, 110, 356, 436)
+
+    const objTextTitle = createText(scene, WIDTH / 2, 131, title, {fontSize: 36})
+    const objTextDesc = createText(scene, WIDTH / 2, 470, description, {fontSize: 20})
+    objTextDesc
+        .setAlign('center') // 中央揃え
+        .setOrigin(0.5, 1)
+    const objBtnBack = createButton(scene, 20 + 90/2, 476, 90, 50, COLOR_SECOND, '戻る' , {fontSize: 24})
+    const objBtnPlay = createButton(scene, 130 + 216/2, 476, 216, 50, COLOR_SECOND, 'プレイ', {fontSize: 24})
+
+    objBtnBack.setOnClick(() => {
+        [
+            objBlur,
+            gWindow,
+            objTextTitle,
+            objTextDesc,
+            objBtnBack,
+            objBtnPlay
+        ].forEach((obj) => obj.destroy())
+    })
 }
 
 export const createText = (scene, x, y, text, {color = 0x212121, fontSize = 24} = {}) => {
