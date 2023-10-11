@@ -22,7 +22,7 @@ export const BG_IN_GAME = 1
 
 export const GAME_SPEED = {
     title: 'スピード',
-    description: '２人で行うゲームです。\n場のカードを数字が繋がるカードを\n出していき、全部出すと勝利です。',
+    description: '２人で行うゲームです。\n場のカードと数字が繋がるカードを\n出していき、全部出すと勝利です。',
     minPlayers: 2,
     maxPlayers: 2
 }

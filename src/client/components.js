@@ -33,9 +33,7 @@ export const drawBlur = (scene) => {
 export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
     const {title, description} = gameData
     const objBlur = drawBlur(scene)
-    const gWindow = scene.add.graphics()
-    gWindow.fillGradientStyle(COLOR_FIRST, COLOR_FIRST, 0xFFFFFF, 0xFFFFFF)
-    gWindow.fillRect(10, 110, 356, 436)
+    const objWindow = drawWindow(scene, 10, 110, 356, 436, COLOR_FIRST)
 
     const objTextTitle = createText(scene, WIDTH / 2, 131, title, {fontSize: 36})
     const objTextDesc = createText(scene, WIDTH / 2, 470, description, {fontSize: 20})
