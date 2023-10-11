@@ -26,7 +26,7 @@ export const drawBackground = (scene, bgType=BG_MENU) => {
     graphics.fillRect(0, 0, WIDTH+1, HEIGHT+1)
 }
 
-export const createText = (scene, x, y, text, {color = 0x212121, fontSize = 24}) => {
+export const createText = (scene, x, y, text, {color = 0x212121, fontSize = 24} = {}) => {
     const colorStr = `#${color.toString(16)}`
     const fontSizeStr = `${fontSize}px`
     const objText = scene.add.text(x, y, text, {fontSize: fontSizeStr, color: colorStr, fontStyle: 'bold'})
@@ -34,11 +34,12 @@ export const createText = (scene, x, y, text, {color = 0x212121, fontSize = 24})
     return objText
 }
 
-export const createButton = (scene, x, y, width, height, color, text="") => {
+export const createButton = (scene, x, y, width, height, color, text, {fontSize = 48} = {}) => {
+    y += height / 2
     const objRect = scene.add.rectangle(0, 0, width, height, color)
     objRect.setStrokeStyle(1, 0xBDBDBD)
     const objRectShadow = scene.add.rectangle(5, 5, width, height, 0x000000)
-    const objText = createText(scene, 0, 0, text, {fontSize: 48}).setOrigin(0.5, 0.5)
+    const objText = createText(scene, 0, 0, text, {fontSize: fontSize}).setOrigin(0.5, 0.5)
     const container = scene.add.container(x, y, [objRectShadow, objRect, objText])
     container.setSize(width, height)
     container.setInteractive()
