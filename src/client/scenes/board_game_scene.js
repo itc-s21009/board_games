@@ -15,7 +15,6 @@ export class BoardGameScene extends Phaser.Scene {
     }
 
     backToPrevScene() {
-        console.log(this.prevScenes)
         const prevScene = this.prevScenes.pop()
         if (prevScene) {
             this.scene.start(prevScene.key, {prevScenes: this.prevScenes, ...prevScene.data})
