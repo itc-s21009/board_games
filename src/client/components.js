@@ -82,21 +82,26 @@ export const createText = (scene, x, y, text, {color = 0x212121, fontSize = 24} 
     return objText
 }
 
-export const createButton = (scene, x, y, width, height, color, textOrSvgPath, {fontSize = 48, isSvg = false} = {}) => {
+export const createButton = (scene, x, y, width, height, color, textOrSvgPath, {fontSize = 48, isSvg = false, withoutShadow = false} = {}) => {
     y += height / 2
     const objRect = scene.add.rectangle(0, 0, width, height, color)
     objRect.setStrokeStyle(1, 0xBDBDBD)
-    const objRectShadow = scene.add.rectangle(5, 5, width, height, 0x000000)
+    const container = scene.add.container(x, y)
+    if (!withoutShadow) {
+        const objRectShadow = scene.add.rectangle(5, 5, width, height, 0x000000)
+        container.add(objRectShadow)
+    }
     const createTextOrIcon = () => {
         if (isSvg) {
             return scene.add.image(0, 0, textOrSvgPath)
+                .setTintFill(COLOR_TEXT_PRIMARY)
         } else {
             return createText(scene, 0, 0, textOrSvgPath, {fontSize: fontSize})
                 .setOrigin(0.5, 0.5)
         }
     }
     const objTextOrIcon = createTextOrIcon()
-    const container = scene.add.container(x, y, [objRectShadow, objRect, objTextOrIcon])
+    container.add([objRect, objTextOrIcon])
     container.setSize(width, height)
     container.setInteractive()
     container.on('pointerover', () => {

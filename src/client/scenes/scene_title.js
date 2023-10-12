@@ -1,4 +1,4 @@
-import {HEIGHT, SCENE_SELECT_MODE, SCENE_TITLE, WIDTH} from "./scene_loader";
+import {HEIGHT, SCENE_RANKING, SCENE_SELECT_MODE, SCENE_TITLE, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground} from "../components";
 import {BoardGameScene} from "./board_game_scene";
 
@@ -15,5 +15,8 @@ export class SceneTitle extends BoardGameScene {
             this.moveTo(SCENE_SELECT_MODE)
         })
         const btnRanking = createButton(this,WIDTH/2, 436, 275, 200, 0x21ABA5, 'ランキング')
+        btnRanking.setOnClick(() => {
+            this.moveTo(SCENE_RANKING)
+        })
     }
 }
