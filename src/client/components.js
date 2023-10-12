@@ -67,7 +67,7 @@ export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
             objects.forEach((obj) => obj.destroy())
         })
         objBtnPlay.setOnClick(() => {
-            scene.scene.start(SCENE_MATCHING, {gameData: gameData})
+            scene.moveTo(SCENE_MATCHING, {gameData: gameData})
         })
     }
 }

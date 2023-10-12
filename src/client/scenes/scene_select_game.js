@@ -1,10 +1,11 @@
-import {SCENE_SELECT_GAME, SCENE_SELECT_MODE, WIDTH} from "./scene_loader";
+import {SCENE_MATCHING, SCENE_SELECT_GAME, SCENE_SELECT_MODE, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawGameDetail} from "../components";
 import {COLOR_SECOND, GAME_DAIFUGO, GAME_OSERO, GAME_SINKEI, GAME_SPEED} from "../game";
+import {BoardGameScene} from "./board_game_scene";
 
-export class SceneSelectGame extends Phaser.Scene {
+export class SceneSelectGame extends BoardGameScene {
     constructor() {
-        super({key: SCENE_SELECT_GAME});
+        super(SCENE_SELECT_GAME);
     }
 
     create() {
@@ -26,11 +27,12 @@ export class SceneSelectGame extends Phaser.Scene {
         })
         const btnOsero = createButton(this, WIDTH / 4 + WIDTH / 2, 382, 168, 154, COLOR_SECOND,'オセロ', {fontSize: 24})
         btnOsero.setOnClick(() => {
-            drawGameDetail(this, GAME_OSERO)
+            // drawGameDetail(this, GAME_OSERO)
+            this.moveTo(SCENE_MATCHING, {gameData: GAME_OSERO})
         })
         const btnBack = createButton(this, WIDTH / 2, 566, 356, 69, COLOR_SECOND, '戻る', {fontSize: 24})
         btnBack.setOnClick(() => {
-            this.scene.start(SCENE_SELECT_MODE)
+            this.backToPrevScene()
         })
     }
 }

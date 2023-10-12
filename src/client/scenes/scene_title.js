@@ -1,9 +1,10 @@
 import {HEIGHT, SCENE_SELECT_MODE, SCENE_TITLE, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground} from "../components";
+import {BoardGameScene} from "./board_game_scene";
 
-export class SceneTitle extends Phaser.Scene {
+export class SceneTitle extends BoardGameScene {
     constructor() {
-        super({key: SCENE_TITLE});
+        super(SCENE_TITLE);
     }
 
     create() {
@@ -11,7 +12,7 @@ export class SceneTitle extends Phaser.Scene {
         createText(this, WIDTH/2, 85, 'ボードゲーム対戦', {fontSize: 40})
         const btnPlay = createButton(this,WIDTH/2, 185, 275, 200, 0x21ABA5, 'プレイ')
         btnPlay.setOnClick(() => {
-            this.scene.start(SCENE_SELECT_MODE)
+            this.moveTo(SCENE_SELECT_MODE)
         })
         const btnRanking = createButton(this,WIDTH/2, 436, 275, 200, 0x21ABA5, 'ランキング')
     }

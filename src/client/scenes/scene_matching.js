@@ -1,13 +1,15 @@
-import {SCENE_MATCHING, SCENE_SELECT_GAME, WIDTH} from "./scene_loader";
+import {SCENE_MATCHING, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawGameDetail} from "../components";
 import {COLOR_DIVIDER, COLOR_FOURTH, COLOR_SECOND} from "../game";
+import {BoardGameScene} from "./board_game_scene";
 
-export class SceneMatching extends Phaser.Scene {
+export class SceneMatching extends BoardGameScene {
     constructor() {
-        super({key: SCENE_MATCHING})
+        super(SCENE_MATCHING)
     }
 
     init(data) {
+        super.init(data)
         this.gameData = data.gameData
         this.roomId = data.roomId
     }
@@ -30,7 +32,7 @@ export class SceneMatching extends Phaser.Scene {
         })
         const btnBack = createButton(this, WIDTH / 2, 489, 200, 100, COLOR_SECOND,'キャンセル', {fontSize: 32})
         btnBack.setOnClick(() => {
-            this.scene.start(SCENE_SELECT_GAME)
+            this.backToPrevScene()
         })
     }
 }

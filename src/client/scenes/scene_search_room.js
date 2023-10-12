@@ -1,10 +1,11 @@
-import {SCENE_FRIEND_MATCH, SCENE_SEARCH_ROOM, WIDTH} from "./scene_loader";
+import {SCENE_SEARCH_ROOM, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawBlur, drawWindow} from "../components";
 import {COLOR_DIVIDER, COLOR_FIRST, COLOR_FOURTH, COLOR_SECOND} from "../game";
+import {BoardGameScene} from "./board_game_scene";
 
-export class SceneSearchRoom extends Phaser.Scene {
+export class SceneSearchRoom extends BoardGameScene {
     constructor() {
-        super({key: SCENE_SEARCH_ROOM});
+        super(SCENE_SEARCH_ROOM);
     }
 
     create() {
@@ -130,7 +131,7 @@ export class SceneSearchRoom extends Phaser.Scene {
         objBtnEnter.setOnClick(() => handleJoin())
 
         objBtnBack.setOnClick(() => {
-            this.scene.start(SCENE_FRIEND_MATCH)
+            this.backToPrevScene()
         })
     }
 }
