@@ -8,6 +8,10 @@ export class SceneSearchRoom extends BoardGameScene {
         super(SCENE_SEARCH_ROOM);
     }
 
+    preload() {
+        this.load.svg('backspace', 'assets/backspace-fill.svg', {scale: 3})
+    }
+
     create() {
         drawBackground(this)
         createText(this, WIDTH / 2, 46, '部屋番号を\n入力して参加', {fontSize: 32})
@@ -156,7 +160,7 @@ export class SceneSearchRoom extends BoardGameScene {
         const objBtn7 = createButton(this, 29 + 82 / 2, 227, 82, 82, COLOR_SECOND, '7', {fontSize: 24})
         const objBtn8 = createButton(this, 110 + 82 / 2, 227, 82, 82, COLOR_SECOND, '8', {fontSize: 24})
         const objBtn9 = createButton(this, 191 + 82 / 2, 227, 82, 82, COLOR_SECOND, '9', {fontSize: 24})
-        const objBtnBackspace = createButton(this, 272 + 82 / 2, 227, 82, 82, COLOR_SECOND, '１字\n削除', {fontSize: 24})
+        const objBtnBackspace = createButton(this, 272 + 82 / 2, 227, 82, 82, COLOR_SECOND, 'backspace', {fontSize: 24, isSvg: true})
         const objBtn4 = createButton(this, 29 + 82 / 2, 308, 82, 82, COLOR_SECOND, '4', {fontSize: 24})
         const objBtn5 = createButton(this, 110 + 82 / 2, 308, 82, 82, COLOR_SECOND, '5', {fontSize: 24})
         const objBtn6 = createButton(this, 191 + 82 / 2, 308, 82, 82, COLOR_SECOND, '6', {fontSize: 24})
