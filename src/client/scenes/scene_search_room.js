@@ -1,6 +1,6 @@
 import {SCENE_SEARCH_ROOM, WIDTH} from "./scene_loader";
-import {createButton, createText, drawBackground, drawBlur, drawWindow} from "../components";
-import {COLOR_DIVIDER, COLOR_FIRST, COLOR_FOURTH, COLOR_SECOND} from "../game";
+import {createButton, createText, drawBackground, drawBlur, drawGameDetail, drawWindow} from "../components";
+import {COLOR_DIVIDER, COLOR_FIRST, COLOR_FOURTH, COLOR_SECOND, COLOR_THIRD, GAME_SINKEI} from "../game";
 import {BoardGameScene} from "./board_game_scene";
 
 export class SceneSearchRoom extends BoardGameScene {
@@ -97,7 +97,60 @@ export class SceneSearchRoom extends BoardGameScene {
                     objects2.forEach((obj) => obj.destroy())
                 })
             }
-            setTimeout(handleNotFound, 5000)
+            const handleFound = () => {
+                if (found || !searching) {
+                    return
+                }
+                searching = false
+                found = true
+                objects.forEach((obj) => obj.destroy())
+
+                const gameData = GAME_SINKEI
+
+                // TODO ここは取得してくる
+                const players = 2
+                const names = ['名前１', '名前２']
+
+                const objBlur = drawBlur(this)
+                const objWindow = drawWindow(this, WIDTH / 2, 84, 275, 500, COLOR_FIRST)
+                const objTextFound = createText(this, WIDTH / 2, 109, '部屋が見つかりました')
+                const objRectField = this.add.rectangle(WIDTH / 2, 151 + 359/2, 250, 359, COLOR_THIRD)
+                const objTextDetail = createText(this, WIDTH / 2, 159, `${gameData.title}\n(${players}/${gameData.maxPlayers})`, {color: 0xFFFFFF})
+                objTextDetail.setAlign('center')
+                const objBtnInfo = createButton(this, 261, 172, 32, 32, COLOR_SECOND, '?', {fontSize: 24})
+                const objBtnBack = createButton(this, 62 + 100/2, 523, 100, 50, COLOR_SECOND, '戻る', {fontSize: 24})
+                const objBtnJoin = createButton(this, 170 + 142/2, 523, 142, 50, COLOR_SECOND, '参加する', {fontSize: 24})
+
+                const objects3 = [
+                    objBlur,
+                    objWindow,
+                    objTextFound,
+                    objRectField,
+                    objTextDetail,
+                    objBtnInfo,
+                    objBtnBack,
+                    objBtnJoin
+                ]
+                names.forEach((name, i) => {
+                    const objRectName = this.add.rectangle(WIDTH / 2, 225 + 40/2 + i*48, 205, 40, COLOR_SECOND)
+                    objRectName.setStrokeStyle(1, COLOR_DIVIDER)
+                    const objTextName = createText(this, 92, 225 + 40/2 + i*48, name, {fontSize: 16})
+                    objTextName.setOrigin(0, 0.5)
+                    objects3.push(objRectName, objTextName)
+                })
+
+                objBtnBack.setOnClick(() => {
+                    objects3.forEach((obj) => obj.destroy())
+                })
+
+                objBtnInfo.setOnClick(() => {
+                    drawGameDetail(this, gameData, true)
+                })
+            }
+
+            setTimeout(handleFound, 500)
+            // 5秒探して見つからなければ終了
+            // setTimeout(handleNotFound, 5000)
         }
         const objBtnJoin = createButton(this, 272 + 82 / 2, 151, 82, 51, COLOR_SECOND, '参加', {fontSize: 24})
         const objBtn7 = createButton(this, 29 + 82 / 2, 227, 82, 82, COLOR_SECOND, '7', {fontSize: 24})
