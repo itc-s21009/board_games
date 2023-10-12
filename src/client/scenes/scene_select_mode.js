@@ -5,7 +5,7 @@ import {
     WIDTH
 } from "./scene_loader";
 import {createButton, createText, drawBackground} from "../components";
-import {COLOR_SECOND, MODE_CPU, MODE_FRIEND_MATCH, MODE_NORMAL, MODE_RATING} from "../game";
+import {COLOR_SECOND, MODE_CPU, MODE_NORMAL, MODE_RATING} from "../game";
 import {BoardGameScene} from "./board_game_scene";
 
 export class SceneSelectMode extends BoardGameScene {

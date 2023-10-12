@@ -1,4 +1,4 @@
-import {SCENE_FRIEND_MATCH, SCENE_SEARCH_ROOM, SCENE_SELECT_GAME, SCENE_SELECT_MODE, WIDTH} from "./scene_loader";
+import {SCENE_FRIEND_MATCH, SCENE_SEARCH_ROOM, SCENE_SELECT_GAME, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground} from "../components";
 import {COLOR_SECOND, MODE_FRIEND_MATCH} from "../game";
 import {BoardGameScene} from "./board_game_scene";
