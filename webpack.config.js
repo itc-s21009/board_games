@@ -2,9 +2,12 @@ const path = require('path')
 const outputFolder = path.join(__dirname, 'public', 'js')
 
 module.exports = {
-    entry: './src/client/game.js',
+    entry: {
+        game: './src/client/game.js',
+        name: './src/server/clientJs/name.js'
+    },
     output: {
-        filename: "game.js",
+        filename: "[name].js",
         path: outputFolder
     }
 }
