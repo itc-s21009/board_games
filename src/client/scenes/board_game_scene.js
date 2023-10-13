@@ -25,7 +25,7 @@ export class BoardGameScene extends Phaser.Scene {
     }
 
     getPlayerName() {
-        return this.internalData.player.name
+        return this.internalData.player ? this.internalData.player.name : 'unknown'
     }
 
     moveTo(key, data = {}) {
