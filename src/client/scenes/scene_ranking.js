@@ -9,10 +9,12 @@ export class SceneRanking extends BoardGameScene {
     }
 
     preload() {
-        this.load.svg('up', 'assets/caret-up-fill.svg', {scale: 2})
-        this.load.svg('left', 'assets/caret-left-fill.svg', {scale: 2})
-        this.load.svg('right', 'assets/caret-right-fill.svg', {scale: 2})
-        this.load.svg('down', 'assets/caret-down-fill.svg', {scale: 2})
+        this.load.svg('up', 'assets/caret-up-fill.svg', {scale: 2.5})
+        this.load.svg('left', 'assets/caret-left-fill.svg', {scale: 2.5})
+        this.load.svg('right', 'assets/caret-right-fill.svg', {scale: 2.5})
+        this.load.svg('down', 'assets/caret-down-fill.svg', {scale: 2.5})
+        this.load.svg('top', 'assets/caret-top-fill.svg', {scale: 2.5})
+        this.load.svg('bottom', 'assets/caret-bottom-fill.svg', {scale: 2.5})
     }
 
     create() {
@@ -32,7 +34,7 @@ export class SceneRanking extends BoardGameScene {
 
         const objBtnPrev = createButton(this, 82 + 39/2, 170, 39, 37, COLOR_SECOND, 'left', {isSvg: true})
         const objBtnNext = createButton(this, 248 + 39/2, 170, 39, 37, COLOR_SECOND, 'right', {isSvg: true})
-        const objBtnFirst = createButton(this, 305 + 44 / 2, 224, 44, 45, COLOR_SECOND, 'up', {
+        const objBtnFirst = createButton(this, 305 + 44 / 2, 224, 44, 45, COLOR_SECOND, 'top', {
                 isSvg: true,
                 withoutShadow: true
             })
@@ -44,7 +46,7 @@ export class SceneRanking extends BoardGameScene {
                 isSvg: true,
                 withoutShadow: true
             })
-        const objBtnLast = createButton(this, 305 + 44 / 2, 509, 44, 45, COLOR_SECOND, 'down', {
+        const objBtnLast = createButton(this, 305 + 44 / 2, 509, 44, 45, COLOR_SECOND, 'bottom', {
                 isSvg: true,
                 withoutShadow: true
             })
