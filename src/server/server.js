@@ -28,7 +28,6 @@ app.get('/', (req, res) => {
         res.sendFile(getViewPath('set_name.html'))
         return
     }
-    console.log(`name:${req.session.name}`)
     res.sendFile(getViewPath('index.html'))
 })
 
