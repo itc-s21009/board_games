@@ -9,12 +9,14 @@ export class BoardGameScene extends Phaser.Scene {
         this.internalData = data.internalData ?? {}
 
         this.internalData.prevScenes = this.internalData.prevScenes ?? []
-        if (!this.internalData.playerName) {
-            fetch(`http://localhost:8080/api/name`, {withCredentials: true})
+        if (!this.internalData.player) {
+            fetch(`http://localhost:8080/api/session`, {withCredentials: true})
                 .then((r) => r.json())
                 .then((data) => {
-                    console.log('name fetched')
-                    this.internalData.playerName = data.name
+                    const id = data.id
+                    socket.emit('get_name', id, (name) => {
+                        this.internalData.player = {id: id, name: name}
+                    })
                 })
         }
 
@@ -23,7 +25,7 @@ export class BoardGameScene extends Phaser.Scene {
     }
 
     getPlayerName() {
-        return this.internalData.playerName
+        return this.internalData.player.name
     }
 
     moveTo(key, data = {}) {

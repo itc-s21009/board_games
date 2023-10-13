@@ -64,7 +64,7 @@ export const GAME_OSERO = {
     maxPlayers: 2
 }
 
-const socket = io()
+export const socket = io()
 
 const config = {
     type: Phaser.AUTO,

@@ -3,6 +3,8 @@ const session = require('express-session')
 const path = require("path");
 const app = express()
 const {Server} = require('socket.io')
+const {PrismaClient} = require('@prisma/client')
+const prisma = new PrismaClient()
 
 const PORT = process.env.port ?? 8080
 
@@ -32,8 +34,10 @@ app.get('/', (req, res) => {
 })
 
 const nameRouter = require('./api/name')
+const sessionRouter = require('./api/session')
 
 app.use('/api/name', nameRouter)
+app.use('/api/session', sessionRouter)
 
 app.use(express.static(path.join(__dirname, '..', '..', 'public')))
 
@@ -46,5 +50,15 @@ io.on('connection', (socket) => {
     console.log('user connected')
     socket.on('disconnect', () => {
         console.log('user disconnected')
+    })
+
+    socket.on('get_name', async (id, callback) => {
+        await prisma.user.findUnique({
+            where: {
+                sessionId: id
+            }
+        }).then((user) => {
+            callback(user.name)
+        })
     })
 })
