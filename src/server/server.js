@@ -9,6 +9,10 @@ const PORT = process.env.port ?? 8080
 require('dotenv').config()
 
 app.use(session({
+    store: new (require('connect-pg-simple')(session))({
+        createTableIfMissing: true,
+        conString: process.env.DATABASE_URL
+    }),
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true
