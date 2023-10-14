@@ -2,7 +2,7 @@ import {
     BG_IN_GAME,
     BG_MENU,
     COLOR_FIRST,
-    COLOR_GAME_FIRST, COLOR_SECOND, COLOR_TEXT_PRIMARY, COLOR_TEXT_WHITE
+    COLOR_GAME_FIRST, COLOR_SECOND, COLOR_TEXT_PRIMARY, COLOR_TEXT_WHITE, socket
 } from "./game";
 import {HEIGHT, SCENE_MATCHING, WIDTH} from "./scenes/scene_loader";
 
@@ -69,7 +69,27 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
             objects.forEach((obj) => obj.destroy())
         })
         objBtnPlay.setOnClick(() => {
-            scene.moveTo(SCENE_MATCHING, {gameData: gameData, mode: mode})
+            const objBlur = drawBlur(scene)
+            socket.emit('join_normal', scene.internalData.player, gameData, (success, playerCount) => {
+                if (success) {
+                    scene.moveTo(SCENE_MATCHING, {gameData: gameData, mode: mode, initialPlayerCount: playerCount})
+                } else {
+                    const objWindow = drawWindow(scene, WIDTH / 2, 251, 275, 166, COLOR_FIRST)
+                    const objText = createText(scene, WIDTH / 2, 288, '参加できませんでした', {fontSize: 24})
+                    objText.setAlign('center')
+                    objText.setOrigin(0.5, 0.25)
+                    const objBtnBack = createButton(scene, WIDTH / 2, 342, 174, 50, COLOR_SECOND, 'OK', {fontSize: 24})
+                    const objects2 = [
+                        objBlur,
+                        objWindow,
+                        objText,
+                        objBtnBack
+                    ]
+                    objBtnBack.setOnClick(() => {
+                        objects2.forEach((obj) => obj.destroy())
+                    })
+                }
+            })
         })
     }
 }
