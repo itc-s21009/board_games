@@ -47,6 +47,7 @@ const server = app.listen(PORT, () => {
 
 const io = new Server(server)
 
+// {players: playerList, gameData: gameData}
 const queues = {}
 
 // {socketId: player}
@@ -145,6 +146,14 @@ io.on('connection', (socket) => {
 
     socket.on('leave_room', (roomId) => {
         leaveRoom(socket, roomId)
+    })
+
+    socket.on('get_room', (roomId, callback) => {
+        callback(queues[roomId])
+    })
+
+    socket.on('join_room', (roomId, callback) => {
+        callback(joinRoom(socket, roomId))
     })
 
     socket.on('disconnecting', () => {

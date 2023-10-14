@@ -1,6 +1,14 @@
-import {SCENE_SEARCH_ROOM, WIDTH} from "./scene_loader";
+import {SCENE_MATCHING, SCENE_SEARCH_ROOM, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawBlur, drawGameDetail, drawWindow} from "../components";
-import {COLOR_DIVIDER, COLOR_FIRST, COLOR_FOURTH, COLOR_SECOND, COLOR_THIRD, GAME_SINKEI} from "../game";
+import {
+    COLOR_DIVIDER,
+    COLOR_FIRST,
+    COLOR_FOURTH,
+    COLOR_SECOND,
+    COLOR_THIRD,
+    MODE_FRIEND_MATCH,
+    socket
+} from "../game";
 import {BoardGameScene} from "./board_game_scene";
 
 export class SceneSearchRoom extends BoardGameScene {
@@ -79,15 +87,10 @@ export class SceneSearchRoom extends BoardGameScene {
                 objText.text = s
                 i+=1
             }, 300)
-            const handleNotFound = () => {
-                if (found || !searching) {
-                    return
-                }
-                searching = false
-                objects.forEach((obj) => obj.destroy())
+            const showMessageWindow = (msg) => {
                 const objBlur = drawBlur(this)
                 const objWindow = drawWindow(this, WIDTH / 2, 251, 275, 166, COLOR_FIRST)
-                const objText = createText(this, WIDTH / 2, 288, 'この番号の部屋は\n見つかりませんでした', {fontSize: 24})
+                const objText = createText(this, WIDTH / 2, 288, msg, {fontSize: 24})
                 objText.setAlign('center')
                 objText.setOrigin(0.5, 0.25)
                 const objBtnBack = createButton(this, WIDTH / 2, 342, 174, 50, COLOR_SECOND, '戻る', {fontSize: 24})
@@ -101,7 +104,15 @@ export class SceneSearchRoom extends BoardGameScene {
                     objects2.forEach((obj) => obj.destroy())
                 })
             }
-            const handleFound = () => {
+            const handleNotFound = () => {
+                if (found || !searching) {
+                    return
+                }
+                searching = false
+                objects.forEach((obj) => obj.destroy())
+                showMessageWindow('この番号の部屋は\n見つかりませんでした')
+            }
+            const handleFound = (room) => {
                 if (found || !searching) {
                     return
                 }
@@ -109,17 +120,11 @@ export class SceneSearchRoom extends BoardGameScene {
                 found = true
                 objects.forEach((obj) => obj.destroy())
 
-                const gameData = GAME_SINKEI
-
-                // TODO ここは取得してくる
-                const players = 2
-                const names = ['名前１', '名前２']
-
                 const objBlur = drawBlur(this)
                 const objWindow = drawWindow(this, WIDTH / 2, 84, 275, 500, COLOR_FIRST)
                 const objTextFound = createText(this, WIDTH / 2, 109, '部屋が見つかりました')
                 const objRectField = this.add.rectangle(WIDTH / 2, 151 + 359/2, 250, 359, COLOR_THIRD)
-                const objTextDetail = createText(this, WIDTH / 2, 159, `${gameData.title}\n(${players}/${gameData.maxPlayers})`, {color: 0xFFFFFF})
+                const objTextDetail = createText(this, WIDTH / 2, 159, `${room.gameData.title}\n(${room.players.length}/${room.gameData.maxPlayers})`, {color: 0xFFFFFF})
                 objTextDetail.setAlign('center')
                 const objBtnInfo = createButton(this, 261, 172, 32, 32, COLOR_SECOND, '?', {fontSize: 24})
                 const objBtnBack = createButton(this, 62 + 100/2, 523, 100, 50, COLOR_SECOND, '戻る', {fontSize: 24})
@@ -135,10 +140,10 @@ export class SceneSearchRoom extends BoardGameScene {
                     objBtnBack,
                     objBtnJoin
                 ]
-                names.forEach((name, i) => {
+                room.players.forEach((player, i) => {
                     const objRectName = this.add.rectangle(WIDTH / 2, 225 + 40/2 + i*48, 205, 40, COLOR_SECOND)
                     objRectName.setStrokeStyle(1, COLOR_DIVIDER)
-                    const objTextName = createText(this, 92, 225 + 40/2 + i*48, name, {fontSize: 16})
+                    const objTextName = createText(this, 92, 225 + 40/2 + i*48, player.name, {fontSize: 16})
                     objTextName.setOrigin(0, 0.5)
                     objects3.push(objRectName, objTextName)
                 })
@@ -148,13 +153,33 @@ export class SceneSearchRoom extends BoardGameScene {
                 })
 
                 objBtnInfo.setOnClick(() => {
-                    drawGameDetail(this, gameData, true)
+                    drawGameDetail(this, room.gameData)
+                })
+
+                objBtnJoin.setOnClick(() => {
+                    socket.emit('join_room', roomId, (success) => {
+                        if (success) {
+                            this.moveTo(SCENE_MATCHING, {
+                                gameData: room.gameData,
+                                mode: MODE_FRIEND_MATCH,
+                                initialPlayerCount: room.players.length + 1,
+                                roomId: roomId
+                            })
+                        } else {
+                            showMessageWindow('部屋に\n参加できませんでした')
+                        }
+                    })
                 })
             }
-
-            setTimeout(handleFound, 500)
-            // 5秒探して見つからなければ終了
-            // setTimeout(handleNotFound, 5000)
+            socket.emit('get_room', roomId, (room) => {
+                if (room) {
+                    handleFound(room)
+                } else {
+                    handleNotFound()
+                }
+            })
+            //5秒探して見つからなければ終了
+            setTimeout(handleNotFound, 5000)
         }
         const objBtnJoin = createButton(this, 272 + 82 / 2, 151, 82, 51, COLOR_SECOND, '参加', {fontSize: 24})
         const objBtn7 = createButton(this, 29 + 82 / 2, 227, 82, 82, COLOR_SECOND, '7', {fontSize: 24})
