@@ -71,21 +71,27 @@ const createPrivateRoom = (gameData) => {
     createQueueRoom(roomId, gameData)
 }
 
-const joinRoom = (player, roomId) => {
+const joinRoom = (socket, roomId) => {
     const room = queues[roomId]
+    const player = getPlayer(socket)
     if (!room || room.players.filter((p) => p.id === player.id).length > 0) {
         return false
     }
+    socket.join(roomId)
     room.players.push(player)
+    io.to(roomId).emit('player_count', room.players.length)
     return true
 }
 
-const leaveRoom = (player, roomId) => {
+const leaveRoom = (socket, roomId) => {
     const room = queues[roomId]
+    const player = getPlayer(socket)
     if (!room) {
         return false
     }
+    socket.leave(roomId)
     room.players = room.players.filter((p) => p.id !== player.id)
+    io.to(roomId).emit('player_count', room.players.length)
     return true
 }
 
@@ -108,33 +114,27 @@ io.on('connection', (socket) => {
         })
     })
 
-    socket.on('join_normal', (player, gameData, callback) => {
+    socket.on('join_normal', (gameData, callback) => {
         const queueId = `queue_normal_${gameData.id}`
-        socket.join(queueId)
         if (!queues[queueId]) {
             createQueueRoom(queueId, gameData)
         }
-        if (joinRoom(player, queueId)) {
+        if (joinRoom(socket, queueId)) {
             const playerCount = queues[queueId].players.length
             callback(true, playerCount)
-            io.to(queueId).emit('player_count', playerCount)
         } else {
             callback(false)
         }
     })
 
-    socket.on('leave_normal', (player, gameData) => {
+    socket.on('leave_normal', (gameData) => {
         const queueId = `queue_normal_${gameData.id}`
-        socket.leave(queueId)
-        leaveRoom(player, queueId)
-        io.to(queueId).emit('player_count', queues[queueId].players.length)
+        leaveRoom(socket, queueId)
     })
 
     socket.on('disconnecting', () => {
         socket.rooms.forEach((room) => {
-            if (leaveRoom(getPlayer(socket), room)) {
-                io.to(room).emit('player_count', queues[room].players.length)
-            }
+            leaveRoom(socket, room)
         })
     })
 })

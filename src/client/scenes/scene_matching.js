@@ -40,7 +40,7 @@ export class SceneMatching extends BoardGameScene {
         const btnBack = createButton(this, WIDTH / 2, 489, 200, 100, COLOR_SECOND,'キャンセル', {fontSize: 32})
         btnBack.setOnClick(() => {
             socket.off('player_count')
-            socket.emit('leave_normal', this.internalData.player, this.gameData)
+            socket.emit('leave_normal', this.gameData)
             this.backToPrevScene()
         })
     }
