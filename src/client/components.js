@@ -2,7 +2,7 @@ import {
     BG_IN_GAME,
     BG_MENU,
     COLOR_FIRST,
-    COLOR_GAME_FIRST, COLOR_SECOND, COLOR_TEXT_PRIMARY, COLOR_TEXT_WHITE, socket
+    COLOR_GAME_FIRST, COLOR_SECOND, COLOR_TEXT_PRIMARY, COLOR_TEXT_WHITE, MODE_FRIEND_MATCH, socket
 } from "./game";
 import {HEIGHT, SCENE_MATCHING, WIDTH} from "./scenes/scene_loader";
 
@@ -70,6 +70,17 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
         })
         objBtnPlay.setOnClick(() => {
             const objBlur = drawBlur(scene)
+            if (mode === MODE_FRIEND_MATCH) {
+                socket.emit('create_room', gameData, (roomId) => {
+                    scene.moveTo(SCENE_MATCHING, {
+                        gameData: gameData,
+                        mode: mode,
+                        initialPlayerCount: 1,
+                        roomId: roomId
+                    })
+                })
+                return
+            }
             socket.emit('join_normal', gameData, (success, playerCount) => {
                 if (success) {
                     scene.moveTo(SCENE_MATCHING, {gameData: gameData, mode: mode, initialPlayerCount: playerCount})

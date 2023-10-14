@@ -64,11 +64,12 @@ const createPrivateRoom = (gameData) => {
         let roomId;
         do {
             roomId = Math.floor(Math.random() * 99999)
-        } while (!queues[roomId])
+        } while (queues[roomId])
         return roomId
     }
     const roomId = generateRoomId()
     createQueueRoom(roomId, gameData)
+    return roomId
 }
 
 const joinRoom = (socket, roomId) => {
@@ -91,7 +92,11 @@ const leaveRoom = (socket, roomId) => {
     }
     socket.leave(roomId)
     room.players = room.players.filter((p) => p.id !== player.id)
-    io.to(roomId).emit('player_count', room.players.length)
+    if (room.players.length <= 0) {
+        delete queues[roomId]
+    } else {
+        io.to(roomId).emit('player_count', room.players.length)
+    }
     return true
 }
 
@@ -130,6 +135,16 @@ io.on('connection', (socket) => {
     socket.on('leave_normal', (gameData) => {
         const queueId = `queue_normal_${gameData.id}`
         leaveRoom(socket, queueId)
+    })
+
+    socket.on('create_room', (gameData, callback) => {
+        const roomId = createPrivateRoom(gameData)
+        joinRoom(socket, roomId)
+        callback(roomId)
+    })
+
+    socket.on('leave_room', (roomId) => {
+        leaveRoom(socket, roomId)
     })
 
     socket.on('disconnecting', () => {

@@ -27,12 +27,10 @@ export class SceneMatching extends BoardGameScene {
         createText(this, WIDTH / 2, 150, '対戦相手を\n待っています', {fontSize: 48})
             .setAlign('center')
         createText(this, WIDTH / 2, 294, `ゲーム：${this.gameData.title}`, {fontSize: 32})
-        if (this.mode === MODE_NORMAL) {
-            const objTextPlayers = createText(this, WIDTH / 2, 358, `待機中：${this.initialPlayerCount}/${this.gameData.maxPlayers}人`, {fontSize: 32})
-            socket.on('player_count', (count) => {
-                objTextPlayers.text = `待機中：${count}/${this.gameData.maxPlayers}人`
-            })
-        }
+        const objTextPlayers = createText(this, WIDTH / 2, 358, `待機中：${this.initialPlayerCount}/${this.gameData.maxPlayers}人`, {fontSize: 32})
+        socket.on('player_count', (count) => {
+            objTextPlayers.text = `待機中：${count}/${this.gameData.maxPlayers}人`
+        })
         const btnInfo = createButton(this, 338, 297, 32, 32, COLOR_SECOND, '？', {fontSize: 24})
         btnInfo.setOnClick(() => {
             drawGameDetail(this, this.gameData)
@@ -40,7 +38,11 @@ export class SceneMatching extends BoardGameScene {
         const btnBack = createButton(this, WIDTH / 2, 489, 200, 100, COLOR_SECOND,'キャンセル', {fontSize: 32})
         btnBack.setOnClick(() => {
             socket.off('player_count')
-            socket.emit('leave_normal', this.gameData)
+            if (this.mode === MODE_FRIEND_MATCH) {
+                socket.emit('leave_room', this.roomId)
+            } else {
+                socket.emit('leave_normal', this.gameData)
+            }
             this.backToPrevScene()
         })
     }
