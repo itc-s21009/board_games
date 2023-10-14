@@ -39,7 +39,7 @@ export const drawWindow = (scene, x, y, width, height, color) => {
     return gWindow
 }
 
-export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
+export const drawGameDetail = (scene, gameData, mode=-1) => {
     const {title, description} = gameData
     const objBlur = drawBlur(scene)
     const objWindow = drawWindow(scene, WIDTH / 2, 110, 356, 436, COLOR_FIRST)
@@ -55,7 +55,7 @@ export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
         objTextTitle,
         objTextDesc,
     ]
-    if (withoutPlayButton) {
+    if (mode === -1) {
         const objBtnBack = createButton(scene, WIDTH / 2, 476, 325, 50, COLOR_SECOND, '閉じる', {fontSize: 24})
         objects.push(objBtnBack)
         objBtnBack.setOnClick(() => {
@@ -69,7 +69,7 @@ export const drawGameDetail = (scene, gameData, withoutPlayButton=false) => {
             objects.forEach((obj) => obj.destroy())
         })
         objBtnPlay.setOnClick(() => {
-            scene.moveTo(SCENE_MATCHING, {gameData: gameData})
+            scene.moveTo(SCENE_MATCHING, {gameData: gameData, mode: mode})
         })
     }
 }
