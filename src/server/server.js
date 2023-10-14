@@ -46,6 +46,9 @@ const server = app.listen(PORT, () => {
 })
 
 const io = new Server(server)
+
+const playerCount = {}
+
 io.on('connection', (socket) => {
     console.log('user connected')
     socket.on('disconnect', () => {
@@ -59,6 +62,33 @@ io.on('connection', (socket) => {
             }
         }).then((user) => {
             callback(user.name)
+        })
+    })
+
+    socket.on('join_normal', (gameData) => {
+        const queueId = `queue_normal_${gameData.id}`
+        socket.join(queueId)
+        if (!playerCount[queueId]) {
+            playerCount[queueId] = 1
+        } else {
+            playerCount[queueId] += 1
+        }
+        io.to(queueId).emit('player_count', playerCount[queueId])
+    })
+
+    socket.on('leave_normal', (gameData) => {
+        const queueId = `queue_normal_${gameData.id}`
+        socket.leave(queueId)
+        playerCount[queueId] -= 1
+        io.to(queueId).emit('player_count', playerCount[queueId])
+    })
+
+    socket.on('disconnecting', () => {
+        socket.rooms.forEach((room) => {
+            if (playerCount[room]) {
+                playerCount[room] -= 1
+                io.to(room).emit('player_count', playerCount[room])
+            }
         })
     })
 })

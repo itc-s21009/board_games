@@ -30,18 +30,21 @@ export const MODE_RATING = 2
 export const MODE_FRIEND_MATCH = 3
 
 export const GAME_SPEED = {
+    id: 'title',
     title: 'スピード',
     description: '２人で行うゲームです。\n場のカードと数字が繋がるカードを\n出していき、全部出すと勝利です。',
     minPlayers: 2,
     maxPlayers: 2
 }
 export const GAME_SINKEI = {
+    id: 'sinkei',
     title: '神経衰弱',
     description: '２〜４人で行うゲームです。\n場のカードを２枚めくって\n同じ数字であればゲットできます。\nゲットした枚数が多い人が勝利です。',
     minPlayers: 2,
     maxPlayers: 4
 }
 export const GAME_DAIFUGO = {
+    id: 'daifugo',
     title: '大富豪',
     description: '４人で行うゲームです。\nルールは以下の通りです。' +
         '\n・スペード３' +
@@ -58,6 +61,7 @@ export const GAME_DAIFUGO = {
     maxPlayers: 4
 }
 export const GAME_OSERO = {
+    id: 'osero',
     title: 'オセロ',
     description: '２人で行うゲームです。\nお馴染みのルールで遊べます。',
     minPlayers: 2,

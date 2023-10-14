@@ -1,6 +1,6 @@
 import {SCENE_MATCHING, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawGameDetail} from "../components";
-import {COLOR_DIVIDER, COLOR_FOURTH, COLOR_SECOND} from "../game";
+import {COLOR_DIVIDER, COLOR_FOURTH, COLOR_SECOND, MODE_NORMAL, socket} from "../game";
 import {BoardGameScene} from "./board_game_scene";
 
 export class SceneMatching extends BoardGameScene {
@@ -12,6 +12,7 @@ export class SceneMatching extends BoardGameScene {
         super.init(data)
         this.gameData = data.gameData
         this.roomId = data.roomId
+        this.mode = data.mode
     }
 
     create() {
@@ -25,13 +26,21 @@ export class SceneMatching extends BoardGameScene {
         createText(this, WIDTH / 2, 150, '対戦相手を\n待っています', {fontSize: 48})
             .setAlign('center')
         createText(this, WIDTH / 2, 294, `ゲーム：${this.gameData.title}`, {fontSize: 32})
-        createText(this, WIDTH / 2, 358, `待機中：1/${this.gameData.maxPlayers}人`, {fontSize: 32})
+        if (this.mode === MODE_NORMAL) {
+            const objTextPlayers = createText(this, WIDTH / 2, 358, `待機中`, {fontSize: 32})
+            socket.on('player_count', (count) => {
+                objTextPlayers.text = `待機中：${count}/${this.gameData.maxPlayers}人`
+            })
+            socket.emit('join_normal', this.gameData)
+        }
         const btnInfo = createButton(this, 338, 297, 32, 32, COLOR_SECOND, '？', {fontSize: 24})
         btnInfo.setOnClick(() => {
             drawGameDetail(this, this.gameData)
         })
         const btnBack = createButton(this, WIDTH / 2, 489, 200, 100, COLOR_SECOND,'キャンセル', {fontSize: 32})
         btnBack.setOnClick(() => {
+            socket.off('player_count')
+            socket.emit('leave_normal', this.gameData)
             this.backToPrevScene()
         })
     }
