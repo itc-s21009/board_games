@@ -31,7 +31,7 @@ export const MODE_RATING = 2
 export const MODE_FRIEND_MATCH = 3
 
 export const GAME_SPEED = {
-    id: 'title',
+    id: 'speed',
     title: 'スピード',
     description: '２人で行うゲームです。\n場のカードと数字が繋がるカードを\n出していき、全部出すと勝利です。',
     minPlayers: 2,
