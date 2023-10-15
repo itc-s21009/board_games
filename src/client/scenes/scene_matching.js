@@ -1,6 +1,13 @@
-import {SCENE_MATCHING, WIDTH} from "./scene_loader";
+import {SCENE_MATCHING, SCENE_SINKEI, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawGameDetail} from "../components";
-import {COLOR_DIVIDER, COLOR_FOURTH, COLOR_SECOND, MODE_FRIEND_MATCH, MODE_NORMAL, socket} from "../game";
+import {
+    COLOR_DIVIDER,
+    COLOR_FOURTH,
+    COLOR_SECOND,
+    GAME_SPEED,
+    MODE_FRIEND_MATCH,
+    socket
+} from "../game";
 import {BoardGameScene} from "./board_game_scene";
 
 export class SceneMatching extends BoardGameScene {
@@ -44,6 +51,15 @@ export class SceneMatching extends BoardGameScene {
                 socket.emit('leave_normal', this.gameData)
             }
             this.backToPrevScene()
+        })
+        socket.on('match_found', (players) => {
+            switch (this.gameData.id) {
+                case GAME_SPEED.id:
+                    this.moveTo(SCENE_SINKEI, {players: players})
+                    break
+                default:
+                    break
+            }
         })
     }
 }

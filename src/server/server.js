@@ -50,8 +50,8 @@ const io = new Server(server)
 // {players: playerList, gameData: gameData}
 const queues = {}
 
-// {socketId: player}
-const sockets = {}
+// {socket: socket, player: {id: playerId, name: playerName}}
+const sockets = []
 
 const createQueueRoom = (roomId, gameData) => {
     if (queues[roomId]) {
@@ -101,7 +101,19 @@ const leaveRoom = (socket, roomId) => {
     return true
 }
 
-const getPlayer = (socket) => sockets[socket.id]
+const getPlayer = (socket) => {
+    const data = sockets.find((s) => socket.id === s.socket.id)
+    if (data) {
+        return data.player
+    }
+}
+
+const getSocket = (player) => {
+    const data = sockets.find((s) => player.id === s.player.id)
+    if (data) {
+        return data.socket
+    }
+}
 
 io.on('connection', (socket) => {
     console.log('user connected')
@@ -115,7 +127,7 @@ io.on('connection', (socket) => {
                 sessionId: id
             }
         }).then((user) => {
-            sockets[socket.id] = {id: id, name: user.name}
+            sockets.push({socket: socket, player: {id: id, name: user.name}})
             callback(user.name)
         })
     })
@@ -162,3 +174,21 @@ io.on('connection', (socket) => {
         })
     })
 })
+
+// 3秒ごとに全ての待ち列を確認して、最大人数に達していれば待っていた順で追い出していく
+setInterval(() => {
+    Object.keys(queues).forEach((queueId) => {
+        const queue = queues[queueId]
+        const maxPlayers = queue.gameData.maxPlayers
+        console.log(`${queueId}: ${queue.players.length}/${maxPlayers}`)
+        if (queue.players.length >= maxPlayers) {
+            const playersToGo = queue.players.slice(0, maxPlayers)
+            queue.players = queue.players.slice(maxPlayers)
+            playersToGo.forEach((p) => {
+                const pSocket = getSocket(p)
+                pSocket.emit('match_found', playersToGo)
+                leaveRoom(pSocket, queueId)
+            })
+        }
+    })
+}, 3000)

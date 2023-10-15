@@ -7,3 +7,5 @@ export const SCENE_MATCHING = 'matching'
 export const SCENE_SEARCH_ROOM = 'search_room'
 export const SCENE_FRIEND_MATCH = 'friend_match'
 export const SCENE_RANKING = 'ranking'
+
+export const SCENE_SINKEI = 'game_sinkei'
