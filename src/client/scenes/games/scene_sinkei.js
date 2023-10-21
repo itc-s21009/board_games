@@ -16,7 +16,6 @@ export class SceneSinkei extends BoardGameScene {
 
     preload() {
         Object.values(CARDS).forEach((cardId) => {
-            console.log(`load assets/cards/${cardId}.png as ${cardId}`)
             this.load.image(cardId, `assets/cards/${cardId}.png`)
         })
     }
@@ -57,6 +56,15 @@ export class SceneSinkei extends BoardGameScene {
             if (cardObjects[y][x]) {
                 console.log(`destroy ${y} ${x} ${JSON.stringify(cardObjects[y][x])}`)
                 cardObjects[y][x].destroy()
+            }
+            if (type === CARDS.BACK) {
+                objImg.setInteractive()
+                objImg.on('pointerover', () => {
+                    objImg.setTint(0xFFFF00)
+                })
+                objImg.on('pointerout', () => {
+                    objImg.clearTint()
+                })
             }
             cardObjects[y][x] = objImg
         }
