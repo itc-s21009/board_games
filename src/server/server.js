@@ -186,7 +186,9 @@ setInterval(() => {
             queue.players = queue.players.slice(maxPlayers)
             playersToGo.forEach((p) => {
                 const pSocket = getSocket(p)
-                pSocket.emit('match_found', playersToGo)
+                // プレイヤーを区別するためのIDとして、セッションIDの一部をクライアントに渡す
+                pSocket.emit('match_found', playersToGo
+                    .map((p) => ({id: p.id.substring(0, 10), name: p.name})))
                 leaveRoom(pSocket, queueId)
             })
         }
