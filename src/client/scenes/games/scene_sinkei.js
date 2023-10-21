@@ -1,7 +1,7 @@
 import {BoardGameScene} from "../board_game_scene";
 import {HEIGHT, SCENE_SINKEI, WIDTH} from "../scene_loader";
 import {createCircleNumber, createText, drawBackground} from "../../components";
-import {BG_IN_GAME, COLOR_DIVIDER, COLOR_GAME_SECOND} from "../../game";
+import {BG_IN_GAME, COLOR_DIVIDER, COLOR_GAME_SECOND, COLOR_GAME_THIRD} from "../../game";
 import {CARDS} from "../../cards";
 
 export class SceneSinkei extends BoardGameScene {
@@ -87,6 +87,7 @@ export class SceneSinkei extends BoardGameScene {
                 .setStrokeStyle(1, COLOR_DIVIDER)
             createText(this, x - width/2 + textMargin, y - height/4, name, {fontSize: 14})
                 .setOrigin(0)
+            createCircleNumber(this, x + width/2 - 30, y, 20, COLOR_GAME_THIRD, score, 0xFFFF00)
         }
         // 全カードをウラ面としてセットする
         for (let y = 0; y < ROWS; y++) {
