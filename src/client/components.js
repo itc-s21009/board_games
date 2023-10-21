@@ -154,3 +154,14 @@ export const createButton = (scene, x, y, width, height, color, textOrSvgPath, {
     container.setOnClick = (handleClick) => container.on('pointerup', handleClick)
     return container
 }
+
+export const createCircleNumber = (scene, x, y, radius, color, num) => {
+    const objCircle = scene.add.circle(0, 0, radius, color)
+    objCircle.setStrokeStyle(1, COLOR_DIVIDER)
+    const objTextNumber = createText(scene, 0, -(radius/2), num.toString())
+    const container = scene.add.container(x, y, [objCircle, objTextNumber])
+    container.setNumber = (n) => {
+        objTextNumber.text = n.toString()
+    }
+    return container
+}
