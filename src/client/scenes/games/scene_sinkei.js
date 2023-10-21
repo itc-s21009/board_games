@@ -80,18 +80,13 @@ export class SceneSinkei extends BoardGameScene {
         const drawPlayer = (name, pos, score) => {
             const width = 170
             const height = 57
-            this.add.rectangle(WIDTH/4, 550, width, height, COLOR_GAME_SECOND)
+            const textMargin = 10
+            const x = pos % 2 === 0 ? WIDTH*0.25 : WIDTH*0.75
+            const y = pos <= 2 ? 550 : 620
+            this.add.rectangle(x, y, width, height, COLOR_GAME_SECOND)
                 .setStrokeStyle(1, COLOR_DIVIDER)
-            createText(this, WIDTH/4, 550 - height / 4, name, {fontSize: 14})
-            this.add.rectangle(WIDTH/2 + WIDTH/4, 550, width, height, COLOR_GAME_SECOND)
-                .setStrokeStyle(1, COLOR_DIVIDER)
-            createText(this, WIDTH/2 + WIDTH/4, 550 - height / 4, name, {fontSize: 14})
-            this.add.rectangle(WIDTH/4, 620, width, height, COLOR_GAME_SECOND)
-                .setStrokeStyle(1, COLOR_DIVIDER)
-            createText(this, WIDTH/4, 620 - height / 4, name, {fontSize: 14})
-            this.add.rectangle(WIDTH/2 + WIDTH/4, 620, width, height, COLOR_GAME_SECOND)
-                .setStrokeStyle(1, COLOR_DIVIDER)
-            createText(this, WIDTH/2 + WIDTH/4, 620 - height / 4, name, {fontSize: 14})
+            createText(this, x - width/2 + textMargin, y - height/4, name, {fontSize: 14})
+                .setOrigin(0)
         }
         // 全カードをウラ面としてセットする
         for (let y = 0; y < ROWS; y++) {
@@ -102,6 +97,9 @@ export class SceneSinkei extends BoardGameScene {
             }
         }
 
-        drawPlayer('test')
+        drawPlayer('player1', 2)
+        drawPlayer('player2', 1)
+        drawPlayer('player3', 4)
+        drawPlayer('player4', 3)
     }
 }
