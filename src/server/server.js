@@ -190,11 +190,17 @@ setInterval(() => {
                 pSocket.emit('match_found', playersToGo
                     .map((p) => ({id: p.id.substring(0, 10), name: p.name})))
                 leaveRoom(pSocket, queueId)
-                // 10秒後に画面遷移させる
-                setTimeout(() => {
-                    pSocket.emit('match_go')
-                }, 10000)
             })
+            // 10秒後に画面遷移させる
+            setTimeout(() => {
+                const disconnected = playersToGo.filter((p) => getSocket(p).disconnected).length > 0
+                // 誰かが切断していればキャンセルする
+                if (disconnected) {
+                    playersToGo.forEach((p) => getSocket(p).emit('match_disconnected'))
+                } else {
+                    playersToGo.forEach((p) => getSocket(p).emit('match_go'))
+                }
+            }, 10000)
         }
     })
 }, 3000)

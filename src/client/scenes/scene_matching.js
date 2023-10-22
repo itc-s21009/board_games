@@ -1,4 +1,4 @@
-import {SCENE_MATCHING, SCENE_SINKEI, WIDTH} from "./scene_loader";
+import {HEIGHT, SCENE_MATCHING, SCENE_SINKEI, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawBlur, drawGameDetail, drawWindow} from "../components";
 import {
     COLOR_DIVIDER, COLOR_FIRST,
@@ -75,6 +75,18 @@ export class SceneMatching extends BoardGameScene {
                     default:
                         break
                 }
+            })
+
+            socket.once('match_disconnected', () => {
+                drawBlur(this)
+                drawWindow(this, WIDTH / 2, HEIGHT / 2 - 70, 270, 150, COLOR_FIRST)
+                createText(this, WIDTH / 2, HEIGHT / 2 - 40, '誰かが切断しました')
+                const objBtnBack = createButton(this, WIDTH / 2, HEIGHT / 2, 200, 50, COLOR_SECOND, '戻る', {fontSize: 24})
+                objBtnBack.setOnClick(() => {
+                    this.backToPrevScene()
+                })
+
+                socket.off('match_go')
             })
         })
     }
