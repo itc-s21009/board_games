@@ -163,5 +163,6 @@ export const createCircleNumber = (scene, x, y, radius, color, num, textColor=CO
     container.setNumber = (n) => {
         objTextNumber.text = n.toString()
     }
+    container.getNumber = () => parseInt(objTextNumber.text)
     return container
 }

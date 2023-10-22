@@ -33,6 +33,9 @@ export class SceneSinkei extends BoardGameScene {
         const cards = []
         const cardObjects = []
 
+        // {player.id: container}
+        const scores = {}
+
         const setCard = (x, y, type) => {
             cards[y][x] = type
             drawCard(x, y, type)
@@ -83,12 +86,19 @@ export class SceneSinkei extends BoardGameScene {
             const textMargin = 10
             const x = pos % 2 === 0 ? WIDTH*0.25 : WIDTH*0.75
             const y = pos <= 2 ? 550 : 620
-            this.add.rectangle(x, y, width, height, COLOR_GAME_SECOND)
-                .setStrokeStyle(1, COLOR_DIVIDER)
-            createText(this, x - width/2 + textMargin, y - height/4, name, {fontSize: 14})
-                .setOrigin(0)
-            createCircleNumber(this, x + width/2 - 30, y, 20, COLOR_GAME_THIRD, score, 0xFFFF00)
+            const objRect = this.add.rectangle(0, 0, width, height, COLOR_GAME_SECOND)
+            objRect.setStrokeStyle(1, COLOR_DIVIDER)
+            const objText = createText(this, - width / 2 + textMargin, - height / 4, name, {fontSize: 14})
+            objText.setOrigin(0)
+            const objScore = createCircleNumber(this, width / 2 - 30, 0, 20, COLOR_GAME_THIRD, score, 0xFFFF00)
+            const container = this.add.container(x, y, [objRect, objText, objScore])
+            container.setScore = objScore.setNumber
+            container.getScore = objScore.getNumber
+            return container
         }
+        const getScore = (player) => scores[player.id].getScore()
+        const setScore = (player, score) => scores[player.id].setScore(score)
+
         // 全カードをウラ面としてセットする
         for (let y = 0; y < ROWS; y++) {
             cards[y] = []
@@ -97,10 +107,7 @@ export class SceneSinkei extends BoardGameScene {
                 setCard(x, y, CARDS.BACK)
             }
         }
-
-        drawPlayer('player1', 2)
-        drawPlayer('player2', 1)
-        drawPlayer('player3', 4)
-        drawPlayer('player4', 3)
+        // 変数scoresに各プレイヤーのスコアを表示するcontainerをセットする
+        this.players.forEach((p, i) => scores[p.id] = drawPlayer(p.name, i+1, 0))
     }
 }
