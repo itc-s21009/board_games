@@ -35,7 +35,7 @@ export class SceneMatching extends BoardGameScene {
             .setAlign('center')
         createText(this, WIDTH / 2, 294, `ゲーム：${this.gameData.title}`, {fontSize: 32})
         const objTextPlayers = createText(this, WIDTH / 2, 358, `待機中：${this.initialPlayerCount}/${this.gameData.maxPlayers}人`, {fontSize: 32})
-        socket.on('player_count', (count) => {
+        this.socketOn('player_count', (count) => {
             objTextPlayers.text = `待機中：${count}/${this.gameData.maxPlayers}人`
         })
         const btnInfo = createButton(this, 338, 297, 32, 32, COLOR_SECOND, '？', {fontSize: 24})
@@ -44,7 +44,6 @@ export class SceneMatching extends BoardGameScene {
         })
         const btnBack = createButton(this, WIDTH / 2, 489, 200, 100, COLOR_SECOND,'キャンセル', {fontSize: 32})
         btnBack.setOnClick(() => {
-            socket.off('player_count')
             if (this.mode === MODE_FRIEND_MATCH) {
                 socket.emit('leave_room', this.roomId)
             } else {
@@ -52,7 +51,7 @@ export class SceneMatching extends BoardGameScene {
             }
             this.backToPrevScene()
         })
-        socket.on('match_found', (players) => {
+        this.socketOn('match_found', (players) => {
             drawBlur(this)
             drawWindow(this, WIDTH / 2, 84, 300, 469, COLOR_FIRST)
             createText(this, WIDTH / 2, 109, '対戦相手が見つかりました')
@@ -67,7 +66,7 @@ export class SceneMatching extends BoardGameScene {
                     .setOrigin(0, 0.5)
             })
 
-            socket.once('match_go', () => {
+            this.socketOnce('match_go', () => {
                 switch (this.gameData.id) {
                     case GAME_SPEED.id:
                         this.moveTo(SCENE_SINKEI, {players: players})
@@ -77,7 +76,7 @@ export class SceneMatching extends BoardGameScene {
                 }
             })
 
-            socket.once('match_disconnected', () => {
+            this.socketOnce('match_disconnected', () => {
                 drawBlur(this)
                 drawWindow(this, WIDTH / 2, HEIGHT / 2 - 70, 270, 150, COLOR_FIRST)
                 createText(this, WIDTH / 2, HEIGHT / 2 - 40, '誰かが切断しました')
@@ -86,7 +85,7 @@ export class SceneMatching extends BoardGameScene {
                     this.backToPrevScene()
                 })
 
-                socket.off('match_go')
+                this.socketOff('match_go')
             })
         })
     }
