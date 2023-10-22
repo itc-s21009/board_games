@@ -1,9 +1,9 @@
 import {SCENE_MATCHING, SCENE_SINKEI, WIDTH} from "./scene_loader";
-import {createButton, createText, drawBackground, drawGameDetail} from "../components";
+import {createButton, createText, drawBackground, drawBlur, drawGameDetail, drawWindow} from "../components";
 import {
-    COLOR_DIVIDER,
+    COLOR_DIVIDER, COLOR_FIRST,
     COLOR_FOURTH,
-    COLOR_SECOND,
+    COLOR_SECOND, COLOR_THIRD,
     GAME_SPEED,
     MODE_FRIEND_MATCH,
     socket
@@ -53,13 +53,29 @@ export class SceneMatching extends BoardGameScene {
             this.backToPrevScene()
         })
         socket.on('match_found', (players) => {
-            switch (this.gameData.id) {
-                case GAME_SPEED.id:
-                    this.moveTo(SCENE_SINKEI, {players: players})
-                    break
-                default:
-                    break
-            }
+            drawBlur(this)
+            drawWindow(this, WIDTH / 2, 84, 300, 469, COLOR_FIRST)
+            createText(this, WIDTH / 2, 109, '対戦相手が見つかりました')
+            this.add.rectangle(WIDTH / 2, 151 + 359/2, 250, 359, COLOR_THIRD)
+            createText(this, WIDTH / 2, 159, `${this.gameData.title}\n(${players.length}/${this.gameData.maxPlayers})`, {color: 0xFFFFFF})
+                .setAlign('center')
+
+            players.forEach((player, i) => {
+                this.add.rectangle(WIDTH / 2, 225 + 40/2 + i*48, 205, 40, COLOR_SECOND)
+                    .setStrokeStyle(1, COLOR_DIVIDER)
+                createText(this, 92, 225 + 40/2 + i*48, player.name, {fontSize: 16})
+                    .setOrigin(0, 0.5)
+            })
+
+            socket.once('match_go', () => {
+                switch (this.gameData.id) {
+                    case GAME_SPEED.id:
+                        this.moveTo(SCENE_SINKEI, {players: players})
+                        break
+                    default:
+                        break
+                }
+            })
         })
     }
 }

@@ -190,6 +190,10 @@ setInterval(() => {
                 pSocket.emit('match_found', playersToGo
                     .map((p) => ({id: p.id.substring(0, 10), name: p.name})))
                 leaveRoom(pSocket, queueId)
+                // 10秒後に画面遷移させる
+                setTimeout(() => {
+                    pSocket.emit('match_go')
+                }, 10000)
             })
         }
     })
