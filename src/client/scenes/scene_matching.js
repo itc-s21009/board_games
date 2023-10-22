@@ -3,8 +3,7 @@ import {createButton, createText, drawBackground, drawBlur, drawGameDetail, draw
 import {
     COLOR_DIVIDER, COLOR_FIRST,
     COLOR_FOURTH,
-    COLOR_SECOND, COLOR_THIRD,
-    GAME_SPEED,
+    COLOR_SECOND, COLOR_THIRD, GAME_SINKEI,
     MODE_FRIEND_MATCH,
     socket
 } from "../game";
@@ -68,7 +67,7 @@ export class SceneMatching extends BoardGameScene {
 
             this.socketOnce('match_go', () => {
                 switch (this.gameData.id) {
-                    case GAME_SPEED.id:
+                    case GAME_SINKEI.id:
                         this.moveTo(SCENE_SINKEI, {players: players})
                         break
                     default:
