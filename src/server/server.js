@@ -178,29 +178,35 @@ io.on('connection', (socket) => {
 // 3秒ごとに全ての待ち列を確認して、最大人数に達していれば待っていた順で追い出していく
 setInterval(() => {
     Object.keys(queues).forEach((queueId) => {
-        const queue = queues[queueId]
-        const maxPlayers = queue.gameData.maxPlayers
-        console.log(`${queueId}: ${queue.players.length}/${maxPlayers}`)
-        if (queue.players.length >= maxPlayers) {
-            const playersToGo = queue.players.slice(0, maxPlayers)
-            queue.players = queue.players.slice(maxPlayers)
-            playersToGo.forEach((p) => {
-                const pSocket = getSocket(p)
-                // プレイヤーを区別するためのIDとして、セッションIDの一部をクライアントに渡す
-                pSocket.emit('match_found', playersToGo
-                    .map((p) => ({id: p.id.substring(0, 10), name: p.name})))
-                leaveRoom(pSocket, queueId)
-            })
-            // 10秒後に画面遷移させる
-            setTimeout(() => {
-                const disconnected = playersToGo.filter((p) => getSocket(p).disconnected).length > 0
-                // 誰かが切断していればキャンセルする
-                if (disconnected) {
-                    playersToGo.forEach((p) => getSocket(p).emit('match_disconnected'))
-                } else {
-                    playersToGo.forEach((p) => getSocket(p).emit('match_go'))
-                }
-            }, 10000)
+        if (queueId.startsWith('queue')) {
+            const queue = queues[queueId]
+            const maxPlayers = queue.gameData.minPlayers
+            console.log(`${queueId}: ${queue.players.length}/${maxPlayers}`)
+            if (queue.players.length >= maxPlayers) {
+                const playersToGo = queue.players.slice(0, maxPlayers)
+                queue.players = queue.players.slice(maxPlayers)
+                playersToGo.forEach((p) => {
+                    const pSocket = getSocket(p)
+                    // プレイヤーを区別するためのIDとして、セッションIDの一部をクライアントに渡す
+                    pSocket.emit('match_found', playersToGo
+                        .map((p) => ({id: p.id.substring(0, 10), name: p.name})))
+                    leaveRoom(pSocket, queueId)
+                })
+                // 10秒後に画面遷移させる
+                setTimeout(() => {
+                    const disconnected = playersToGo.filter((p) => getSocket(p).disconnected).length > 0
+                    // 誰かが切断していればキャンセルする
+                    if (disconnected) {
+                        playersToGo.forEach((p) => getSocket(p).emit('match_disconnected'))
+                    } else {
+                        const roomId = createPrivateRoom(queue.gameData)
+                        console.log(`game room: ${roomId}`)
+                        playersToGo.forEach((p) => joinRoom(getSocket(p), roomId))
+                        io.to(roomId).emit('match_go')
+                        startGame(roomId)
+                    }
+                }, 10000)
+            }
         }
     })
 }, 3000)
