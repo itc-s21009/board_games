@@ -101,6 +101,49 @@ const leaveRoom = (socket, roomId) => {
     return true
 }
 
+const startGame = (roomId) => {
+    const room = queues[roomId]
+    if (!room) {
+        return false
+    }
+    let started = false
+    const start = () => {
+        if (started) {
+            return
+        }
+        started = true
+        switch(room.gameData.id) {
+            case 'sinkei':
+                // カードを引く人
+                let drawerPointer = 0
+                console.log(room.players)
+                room.players.forEach((player) => {
+                    const socket = getSocket(player)
+                    socket.emit('sinkei_drawer', drawerPointer)
+                })
+                drawerPointer = (drawerPointer++) % room.players.length
+                // io.to(roomId).emit('sinkei_drawer', (drawerPointer++) % room.players.length)
+                return true
+            default:
+                return false
+        }
+    }
+    let playersNotReady = room.players
+    room.players.forEach((readyPlayer) => {
+        const socket = getSocket(readyPlayer)
+        socket.once('ready', () => {
+            playersNotReady = playersNotReady.filter((player) => player.id !== readyPlayer.id)
+            if (playersNotReady.length === 0) {
+                setTimeout(start, 1000)
+            }
+        })
+    })
+    setTimeout(() => {
+        // TODO ５秒以内に準備完了できなかったプレイヤーを退出させる処理
+        start()
+    }, 5000)
+}
+
 const getPlayer = (socket) => {
     const data = sockets.find((s) => socket.id === s.socket.id)
     if (data) {

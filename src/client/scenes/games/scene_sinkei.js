@@ -22,7 +22,7 @@ export class SceneSinkei extends BoardGameScene {
 
     create() {
         drawBackground(this, BG_IN_GAME)
-        const objTextState = createText(this, WIDTH / 2, 24, 'あなたの番です', {fontSize: 32})
+        const objTextState = createText(this, WIDTH / 2, 24, '', {fontSize: 16})
         createCircleNumber(this, 320 + 50/2, 5 + 25/2 + 25/2, 25, COLOR_GAME_SECOND, 10)
 
         // (4, 5), (5, 6), (6, 7), (6, 8)
@@ -109,5 +109,21 @@ export class SceneSinkei extends BoardGameScene {
         }
         // 変数scoresに各プレイヤーのスコアを表示するcontainerをセットする
         this.players.forEach((p, i) => scores[p.id] = drawPlayer(p.name, i+1, 0))
+
+        const player = this.getPlayer()
+        let drawer
+
+        this.socketEmit('ready')
+
+        const isMyself = (victim) => player.id.startsWith(victim.id)
+
+        this.socketOn('sinkei_drawer', (drawerPointer) => {
+            drawer = this.players[drawerPointer]
+            if (isMyself(drawer)) {
+                objTextState.text = `あなたの番です`
+            } else {
+                objTextState.text = `${drawer.name} の番です`
+            }
+        })
     }
 }

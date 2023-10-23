@@ -26,6 +26,10 @@ export class BoardGameScene extends Phaser.Scene {
         this.eventsListening = []
     }
 
+    getPlayer() {
+        return this.internalData.player
+    }
+
     getPlayerName() {
         return this.internalData.player ? this.internalData.player.name : 'unknown'
     }
@@ -66,5 +70,9 @@ export class BoardGameScene extends Phaser.Scene {
     socketOff(eventName) {
         this.eventsListening = this.eventsListening.filter((d) => d !== eventName)
         socket.off(eventName)
+    }
+
+    socketEmit(eventName) {
+        socket.emit(eventName)
     }
 }
