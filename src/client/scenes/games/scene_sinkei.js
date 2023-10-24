@@ -35,9 +35,20 @@ export class SceneSinkei extends BoardGameScene {
         // {player.id: container}
         const scores = {}
 
+        const player = this.getPlayer()
+        let drawer
+        let isMyTurn = false
+
         const setCard = (x, y, type) => {
             cards[y][x].type = type
-            drawCard(x, y, type)
+            if (cards[y][x].object) {
+                const scale = cards[y][x].object.scaleX
+                cards[y][x].object.setTexture(type)
+                cards[y][x].object.setScale(scale)
+                cards[y][x].object.setData('card', type)
+            } else {
+                drawCard(x, y, type)
+            }
         }
         const drawCard = (x, y, type) => {
             const imgWidth = 136
@@ -60,15 +71,28 @@ export class SceneSinkei extends BoardGameScene {
                 cards[y][x].object.destroy()
                 delete cards[y][x].object
             }
-            if (type === CARDS.BACK) {
-                objImg.setInteractive()
-                objImg.on('pointerover', () => {
-                    objImg.setTint(0x9999FF)
-                })
-                objImg.on('pointerout', () => {
-                    objImg.clearTint()
-                })
-            }
+            objImg.setData('card', type)
+            objImg.setInteractive()
+            const isInteractive = () => isMyTurn && objImg.getData('card') === CARDS.BACK
+            objImg.on('pointerover', () => {
+                if (!isInteractive()) {
+                    return
+                }
+                objImg.setTint(0x9999FF)
+            })
+            objImg.on('pointerout', () => {
+                if (!isInteractive()) {
+                    return
+                }
+                objImg.clearTint()
+            })
+            objImg.on('pointerup', () => {
+                if (!isInteractive()) {
+                    return
+                }
+                objImg.clearTint()
+                // setCard(x, y, CARDS.JOKER)
+            })
             cards[y][x].object = objImg
         }
         const updateCards = () => {
@@ -120,10 +144,6 @@ export class SceneSinkei extends BoardGameScene {
         // 変数scoresに各プレイヤーのスコアを表示するcontainerをセットする
         this.players.forEach((p, i) => scores[p.id] = drawPlayer(p.name, i+1, 0))
 
-        const player = this.getPlayer()
-        let drawer
-        let isMyTurn = false
-
         this.socketEmit('ready')
 
         const isMyself = (victim) => player.id.startsWith(victim.id)
@@ -133,25 +153,9 @@ export class SceneSinkei extends BoardGameScene {
             if (isMyself(drawer)) {
                 objTextState.text = `あなたの番です`
                 isMyTurn = true
-                cards.flat().forEach((card) => {
-                    if (card.type === CARDS.BACK) {
-                        card.object.on('pointerover', () => {
-                            card.object.setTint(0x9999FF)
-                        })
-                        card.object.on('pointerout', () => {
-                            card.object.clearTint()
-                        })
-                    }
-                })
             } else {
                 objTextState.text = `${drawer.name} の番です`
                 isMyTurn = false
-                cards.flat().forEach((card) => {
-                    if (card.type === CARDS.BACK) {
-                        card.object.off('pointerover')
-                        card.object.off('pointerout')
-                    }
-                })
             }
         })
     }
