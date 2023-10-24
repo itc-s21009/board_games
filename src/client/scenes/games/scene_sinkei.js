@@ -134,9 +134,25 @@ export class SceneSinkei extends BoardGameScene {
             if (isMyself(drawer)) {
                 objTextState.text = `あなたの番です`
                 isMyTurn = true
+                cards.flat().forEach((card) => {
+                    if (card.type === CARDS.BACK) {
+                        card.object.on('pointerover', () => {
+                            card.object.setTint(0xFFFF00)
+                        })
+                        card.object.on('pointerout', () => {
+                            card.object.clearTint()
+                        })
+                    }
+                })
             } else {
                 objTextState.text = `${drawer.name} の番です`
                 isMyTurn = false
+                cards.flat().forEach((card) => {
+                    if (card.type === CARDS.BACK) {
+                        card.object.off('pointerover')
+                        card.object.off('pointerout')
+                    }
+                })
             }
         })
     }
