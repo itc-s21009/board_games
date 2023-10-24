@@ -28,6 +28,8 @@ export class SceneSinkei extends BoardGameScene {
         let ROWS
         let COLUMNS
 
+        // フィールドを表現する多次元配列になる
+        // {type: type, object: objImg}
         const cards = []
         const cardObjects = []
 
@@ -35,7 +37,7 @@ export class SceneSinkei extends BoardGameScene {
         const scores = {}
 
         const setCard = (x, y, type) => {
-            cards[y][x] = type
+            cards[y][x].type = type
             drawCard(x, y, type)
         }
         const drawCard = (x, y, type) => {
@@ -54,9 +56,10 @@ export class SceneSinkei extends BoardGameScene {
 
             const objImg = this.add.image(cardX, cardY, type)
             objImg.setScale(scale / 2)
-            if (cardObjects[y][x]) {
-                console.log(`destroy ${y} ${x} ${JSON.stringify(cardObjects[y][x])}`)
-                cardObjects[y][x].destroy()
+            if (cards[y][x].object) {
+                console.log(`destroy object Y${y} X${x}`)
+                cards[y][x].object.destroy()
+                delete cards[y][x].object
             }
             if (type === CARDS.BACK) {
                 objImg.setInteractive()
@@ -67,10 +70,16 @@ export class SceneSinkei extends BoardGameScene {
                     objImg.clearTint()
                 })
             }
-            cardObjects[y][x] = objImg
+            cards[y][x].object = objImg
         }
         const updateCards = () => {
-            cardObjects.forEach((line) => line.forEach((c) => c.destroy()))
+            // カードの画像オブジェクトを一旦全て消す
+            cards.flat().forEach((card) => {
+                if (card.object) {
+                    card.object.destroy()
+                    delete card.object
+                }
+            })
             for (let y = 0; y < ROWS; y++) {
                 for (let x = 0; x < COLUMNS; x++) {
                     drawCard(x, y, cards[y][x])
@@ -102,8 +111,8 @@ export class SceneSinkei extends BoardGameScene {
             COLUMNS = data.COLUMNS
             // 全カードをウラ面としてセットする
             for (let y = 0; y < ROWS; y++) {
-                cards[y] = []
-                cardObjects[y] = []
+                // y行を{}で埋める
+                cards[y] = Array(COLUMNS).fill(null).map(() => ({}))
                 for (let x = 0; x < COLUMNS; x++) {
                     setCard(x, y, CARDS.BACK)
                 }
