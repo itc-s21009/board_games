@@ -25,10 +25,8 @@ export class SceneSinkei extends BoardGameScene {
         const objTextState = createText(this, WIDTH / 2, 24, '', {fontSize: 16})
         createCircleNumber(this, 320 + 50/2, 5 + 25/2 + 25/2, 25, COLOR_GAME_SECOND, 10)
 
-        // (4, 5), (5, 6), (6, 7), (6, 8)
-        // がちょうどいい
-        const ROWS = 5
-        const COLUMNS = 6
+        let ROWS
+        let COLUMNS
 
         const cards = []
         const cardObjects = []
@@ -99,19 +97,24 @@ export class SceneSinkei extends BoardGameScene {
         const getScore = (player) => scores[player.id].getScore()
         const setScore = (player, score) => scores[player.id].setScore(score)
 
-        // 全カードをウラ面としてセットする
-        for (let y = 0; y < ROWS; y++) {
-            cards[y] = []
-            cardObjects[y] = []
-            for (let x = 0; x < COLUMNS; x++) {
-                setCard(x, y, CARDS.BACK)
+        this.socketOn('sinkei_areasize', (data) => {
+            ROWS = data.ROWS
+            COLUMNS = data.COLUMNS
+            // 全カードをウラ面としてセットする
+            for (let y = 0; y < ROWS; y++) {
+                cards[y] = []
+                cardObjects[y] = []
+                for (let x = 0; x < COLUMNS; x++) {
+                    setCard(x, y, CARDS.BACK)
+                }
             }
-        }
+        })
         // 変数scoresに各プレイヤーのスコアを表示するcontainerをセットする
         this.players.forEach((p, i) => scores[p.id] = drawPlayer(p.name, i+1, 0))
 
         const player = this.getPlayer()
         let drawer
+        let isMyTurn = false
 
         this.socketEmit('ready')
 
@@ -121,8 +124,10 @@ export class SceneSinkei extends BoardGameScene {
             drawer = this.players[drawerPointer]
             if (isMyself(drawer)) {
                 objTextState.text = `あなたの番です`
+                isMyTurn = true
             } else {
                 objTextState.text = `${drawer.name} の番です`
+                isMyTurn = false
             }
         })
     }

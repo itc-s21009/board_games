@@ -35,6 +35,7 @@ app.get('/', (req, res) => {
 
 const nameRouter = require('./api/name')
 const sessionRouter = require('./api/session')
+const CARDS = require("../server/cards");
 
 app.use('/api/name', nameRouter)
 app.use('/api/session', sessionRouter)
@@ -114,15 +115,43 @@ const startGame = (roomId) => {
         started = true
         switch(room.gameData.id) {
             case 'sinkei':
+                // (4, 5), (5, 6), (6, 7), (6, 8)
+                // がちょうどいい
+                const ROWS = 5
+                const COLUMNS = 6
+                io.to(roomId).emit('sinkei_areasize', {ROWS: ROWS, COLUMNS: COLUMNS})
+
+                const cardsCount = ROWS * COLUMNS
+                let cards = []
+                for (let j = 0; j < 2; j++) {
+                    for (let i = 0; i < cardsCount/2; i++) {
+                        cards.push(CARDS[Object.keys(CARDS)[i]])
+                    }
+                }
+                const shuffle = (array) => {
+                    const newArray = [...array]
+                    for (let i = array.length-1; i >= 0; i--) {
+                        let j = Math.floor(Math.random() * i);
+                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]]
+                    }
+                    return newArray
+                }
+                const chunkArray = (array, chunkSize) => {
+                    const newArray = []
+                    for (let i = 0; i < array.length; i += chunkSize) {
+                        newArray.push(array.slice(i, i + chunkSize))
+                    }
+                    return newArray
+                }
+                cards = shuffle(cards)
+                cards = chunkArray(cards, COLUMNS)
                 // カードを引く人
                 let drawerPointer = 0
                 console.log(room.players)
                 room.players.forEach((player) => {
                     const socket = getSocket(player)
-                    socket.emit('sinkei_drawer', drawerPointer)
                 })
-                drawerPointer = (drawerPointer++) % room.players.length
-                // io.to(roomId).emit('sinkei_drawer', (drawerPointer++) % room.players.length)
+                io.to(roomId).emit('sinkei_drawer', (drawerPointer++) % room.players.length)
                 return true
             default:
                 return false

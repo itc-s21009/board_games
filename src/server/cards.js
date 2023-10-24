@@ -1,4 +1,4 @@
-export const CARDS = {
+const CARDS = {
     C_1: 'club_01',
     C_2: 'club_02',
     C_3: 'club_03',
@@ -55,3 +55,5 @@ export const CARDS = {
     JOKER: 'joker',
     JOKER_BLACK: 'joker_black',
 }
+
+module.exports = CARDS
