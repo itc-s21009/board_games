@@ -72,7 +72,7 @@ export class BoardGameScene extends Phaser.Scene {
         socket.off(eventName)
     }
 
-    socketEmit(eventName) {
-        socket.emit(eventName)
+    socketEmit(eventName, ...args) {
+        socket.emit(eventName, ...args)
     }
 }

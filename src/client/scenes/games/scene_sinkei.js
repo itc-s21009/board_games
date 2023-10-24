@@ -91,7 +91,9 @@ export class SceneSinkei extends BoardGameScene {
                     return
                 }
                 objImg.clearTint()
-                // setCard(x, y, CARDS.JOKER)
+                this.socketEmit('sinkei_pick', {x: x, y: y}, (type) => {
+                    setCard(x, y, type)
+                })
             })
             cards[y][x].object = objImg
         }

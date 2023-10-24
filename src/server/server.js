@@ -147,11 +147,20 @@ const startGame = (roomId) => {
                 cards = chunkArray(cards, COLUMNS)
                 // カードを引く人
                 let drawerPointer = 0
+                let drawer
                 console.log(room.players)
                 room.players.forEach((player) => {
                     const socket = getSocket(player)
+                    socket.on('sinkei_pick', (position, callback) => {
+                        const {x, y} = position
+                        if (player.id === drawer.id) {
+                            callback(cards[y][x])
+                        }
+                    })
                 })
-                io.to(roomId).emit('sinkei_drawer', (drawerPointer++) % room.players.length)
+                io.to(roomId).emit('sinkei_drawer', drawerPointer)
+                drawer = room.players[drawerPointer]
+                drawerPointer = (drawerPointer++) % room.players.length
                 return true
             default:
                 return false
