@@ -31,7 +31,6 @@ export class SceneSinkei extends BoardGameScene {
         // フィールドを表現する多次元配列になる
         // {type: type, object: objImg}
         const cards = []
-        const cardObjects = []
 
         // {player.id: container}
         const scores = {}
@@ -55,7 +54,7 @@ export class SceneSinkei extends BoardGameScene {
             const cardY = marginY + cardHeight/2 + y*(cardHeight)
 
             const objImg = this.add.image(cardX, cardY, type)
-            objImg.setScale(scale / 2)
+            objImg.setScale(scale)
             if (cards[y][x].object) {
                 console.log(`destroy object Y${y} X${x}`)
                 cards[y][x].object.destroy()
