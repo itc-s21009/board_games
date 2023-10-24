@@ -64,7 +64,7 @@ export class SceneSinkei extends BoardGameScene {
             if (type === CARDS.BACK) {
                 objImg.setInteractive()
                 objImg.on('pointerover', () => {
-                    objImg.setTint(0xFFFF00)
+                    objImg.setTint(0x9999FF)
                 })
                 objImg.on('pointerout', () => {
                     objImg.clearTint()
@@ -137,7 +137,7 @@ export class SceneSinkei extends BoardGameScene {
                 cards.flat().forEach((card) => {
                     if (card.type === CARDS.BACK) {
                         card.object.on('pointerover', () => {
-                            card.object.setTint(0xFFFF00)
+                            card.object.setTint(0x9999FF)
                         })
                         card.object.on('pointerout', () => {
                             card.object.clearTint()
