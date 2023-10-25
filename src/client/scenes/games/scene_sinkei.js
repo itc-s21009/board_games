@@ -161,8 +161,11 @@ export class SceneSinkei extends BoardGameScene {
                 isMyTurn = false
             }
         })
-        this.socketOn('sinkei_open', ({x, y}, type) => {
+        this.socketOn('sinkei_set', ({x, y}, type) => {
             setCard(x, y, type)
+        })
+        this.socketOn('sinkei_result', (pos1, pos2, isEqual) => {
+
         })
     }
 }

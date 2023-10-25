@@ -148,19 +148,48 @@ const startGame = (roomId) => {
                 // カードを引く人
                 let drawerPointer = 0
                 let drawer
+                let drawCount = 0
+                let pos1
+                let pos2
+                const changeDrawer = () => {
+                    io.to(roomId).emit('sinkei_drawer', drawerPointer)
+                    drawer = room.players[drawerPointer]
+                    drawerPointer = (++drawerPointer) % room.players.length
+                    drawCount = 0
+                }
                 console.log(room.players)
                 room.players.forEach((player) => {
                     const socket = getSocket(player)
                     socket.on('sinkei_pick', (position) => {
+                        if (drawCount >= 2) {
+                            return
+                        }
                         const {x, y} = position
                         if (player.id === drawer.id) {
-                            io.to(roomId).emit('sinkei_open', position, cards[y][x])
+                            io.to(roomId).emit('sinkei_set', position, cards[y][x])
+                            setTimeout(() => {
+                                if (!pos1) {
+                                    pos1 = {x, y}
+                                } else if (!pos2) {
+                                    pos2 = {x, y}
+                                    const isEqual = cards[pos1.y][pos1.x] === cards[pos2.y][pos2.x]
+                                    io.to(roomId).emit('sinkei_result', pos1, pos2, isEqual)
+                                    if (isEqual) {
+                                        io.to(roomId).emit('sinkei_delete', pos1)
+                                        io.to(roomId).emit('sinkei_delete', pos2)
+                                    } else {
+                                        io.to(roomId).emit('sinkei_set', pos1, CARDS.BACK)
+                                        io.to(roomId).emit('sinkei_set', pos2, CARDS.BACK)
+                                    }
+                                    pos1 = null
+                                    pos2 = null
+                                    changeDrawer()
+                                }
+                            }, 500)
                         }
                     })
                 })
-                io.to(roomId).emit('sinkei_drawer', drawerPointer)
-                drawer = room.players[drawerPointer]
-                drawerPointer = (drawerPointer++) % room.players.length
+                changeDrawer()
                 return true
             default:
                 return false
