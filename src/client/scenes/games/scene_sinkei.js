@@ -43,6 +43,7 @@ export class SceneSinkei extends BoardGameScene {
         const setCard = (x, y, type) => {
             cards[y][x].type = type
             if (cards[y][x].object) {
+                cards[y][x].object.clearTint()
                 if (type) {
                     const scale = cards[y][x].object.scaleX
                     cards[y][x].object.setTexture(type)
@@ -178,10 +179,17 @@ export class SceneSinkei extends BoardGameScene {
             if (isMyself(drawer)) {
                 drawCount = 0
                 objTextState.text = `あなたの番です`
+                objTextState.setFontSize(28)
                 isMyTurn = true
             } else {
                 objTextState.text = `${drawer.name} の番です`
+                objTextState.setFontSize(16)
                 isMyTurn = false
+                cards.flat().forEach((card) => {
+                    if (card.object) {
+                        card.object.clearTint()
+                    }
+                })
             }
         })
         this.socketOn('sinkei_set', ({x, y}, type) => {
