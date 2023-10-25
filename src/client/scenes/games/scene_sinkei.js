@@ -183,7 +183,6 @@ export class SceneSinkei extends BoardGameScene {
             setScore(victim, score)
         })
         this.socketOnce('sinkei_end', (scoreboard) => {
-            console.log(scoreboard)
             let placement = 0
             for (let i = 0; i < scoreboard.length; i++) {
                 const score = scoreboard[i]
@@ -194,7 +193,18 @@ export class SceneSinkei extends BoardGameScene {
             }
             drawBlur(this)
             drawWindow(this, WIDTH / 2, 144, 285, 393, COLOR_GAME_FIRST)
-            createText(this, WIDTH / 2, 144 + 91/2, `ゲーム終了\n順位：${placement} 位`)
+            createText(this, WIDTH / 2, 164, `ゲーム終了\n順位：${placement}位`)
+
+            scoreboard.forEach((scoreData, i) => {
+                const offsetY = i*48
+                createCircleNumber(this, 87, 268 + offsetY, 20, COLOR_GAME_SECOND, i+1)
+                this.add.rectangle(120, 248 + offsetY, 187, 38, COLOR_GAME_SECOND)
+                    .setStrokeStyle(1, COLOR_DIVIDER)
+                    .setOrigin(0)
+                createText(this, 120 + 10, 258 + offsetY, scoreData.name, {fontSize: 16})
+                    .setOrigin(0)
+                createCircleNumber(this, 287, 268 + offsetY, 15, COLOR_GAME_THIRD, scoreData.score, 0xFFFF00)
+            })
 
             const objBtnBack = createButton(this, WIDTH / 2, 466, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})
             objBtnBack.setOnClick(() => {
