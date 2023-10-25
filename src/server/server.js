@@ -151,10 +151,10 @@ const startGame = (roomId) => {
                 console.log(room.players)
                 room.players.forEach((player) => {
                     const socket = getSocket(player)
-                    socket.on('sinkei_pick', (position, callback) => {
+                    socket.on('sinkei_pick', (position) => {
                         const {x, y} = position
                         if (player.id === drawer.id) {
-                            callback(cards[y][x])
+                            io.to(roomId).emit('sinkei_open', position, cards[y][x])
                         }
                     })
                 })

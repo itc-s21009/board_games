@@ -91,9 +91,7 @@ export class SceneSinkei extends BoardGameScene {
                     return
                 }
                 objImg.clearTint()
-                this.socketEmit('sinkei_pick', {x: x, y: y}, (type) => {
-                    setCard(x, y, type)
-                })
+                this.socketEmit('sinkei_pick', {x: x, y: y})
             })
             cards[y][x].object = objImg
         }
@@ -159,6 +157,9 @@ export class SceneSinkei extends BoardGameScene {
                 objTextState.text = `${drawer.name} の番です`
                 isMyTurn = false
             }
+        })
+        this.socketOn('sinkei_open', ({x, y}, type) => {
+            setCard(x, y, type)
         })
     }
 }
