@@ -37,6 +37,7 @@ export class SceneSinkei extends BoardGameScene {
 
         const player = this.getPlayer()
         let drawer
+        let drawCount = 0
         let isMyTurn = false
 
         const setCard = (x, y, type) => {
@@ -73,7 +74,7 @@ export class SceneSinkei extends BoardGameScene {
             }
             objImg.setData('card', type)
             objImg.setInteractive()
-            const isInteractive = () => isMyTurn && objImg.getData('card') === CARDS.BACK
+            const isInteractive = () => isMyTurn && objImg.getData('card') === CARDS.BACK && drawCount < 2
             objImg.on('pointerover', () => {
                 if (!isInteractive()) {
                     return
@@ -91,6 +92,7 @@ export class SceneSinkei extends BoardGameScene {
                     return
                 }
                 objImg.clearTint()
+                drawCount++
                 this.socketEmit('sinkei_pick', {x: x, y: y})
             })
             cards[y][x].object = objImg
@@ -151,6 +153,7 @@ export class SceneSinkei extends BoardGameScene {
         this.socketOn('sinkei_drawer', (drawerPointer) => {
             drawer = this.players[drawerPointer]
             if (isMyself(drawer)) {
+                drawCount = 0
                 objTextState.text = `あなたの番です`
                 isMyTurn = true
             } else {
