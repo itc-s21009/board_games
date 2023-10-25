@@ -122,6 +122,7 @@ const startGame = (roomId) => {
                 io.to(roomId).emit('sinkei_areasize', {ROWS: ROWS, COLUMNS: COLUMNS})
 
                 const cardsCount = ROWS * COLUMNS
+                let cardsRemain = cardsCount
                 let cards = []
                 for (let j = 0; j < 2; j++) {
                     for (let i = 0; i < cardsCount/2; i++) {
@@ -162,10 +163,12 @@ const startGame = (roomId) => {
                     scores[player.id] = score
                     io.to(roomId).emit('sinkei_setscore', playerIndex, score)
                 }
-                const changeDrawer = () => {
+                const changeDrawer = (change=true) => {
+                    if (change) {
+                        drawerPointer = (++drawerPointer) % room.players.length
+                    }
                     io.to(roomId).emit('sinkei_drawer', drawerPointer)
                     drawer = room.players[drawerPointer]
-                    drawerPointer = (++drawerPointer) % room.players.length
                     drawCount = 0
                 }
                 console.log(room.players)
@@ -189,19 +192,40 @@ const startGame = (roomId) => {
                                         io.to(roomId).emit('sinkei_delete', pos1)
                                         io.to(roomId).emit('sinkei_delete', pos2)
                                         setScore(player, getScore(player) + 2)
+                                        cardsRemain -= 2
+                                        if (cardsRemain <= 0) {
+                                            const nameScores = Object.keys(scores)
+                                                .map((playerId) => {
+                                                    const p = room.players.find((p) => p.id === playerId)
+                                                    return {
+                                                        id: p.id.substring(0, 10),
+                                                        name: p.name,
+                                                        score: scores[playerId]
+                                                    }
+                                                })
+                                            const scoreboard = nameScores.sort((a, b) => a.score < b.score ? 1 : -1)
+                                            io.to(roomId).emit('sinkei_end', scoreboard)
+                                            room.players.forEach((p) => {
+                                                const socket = getSocket(p)
+                                                socket.removeAllListeners('sinkei_pick')
+                                                leaveRoom(socket, roomId)
+                                            })
+                                        } else {
+                                            changeDrawer(false)
+                                        }
                                     } else {
                                         io.to(roomId).emit('sinkei_set', pos1, CARDS.BACK)
                                         io.to(roomId).emit('sinkei_set', pos2, CARDS.BACK)
+                                        changeDrawer()
                                     }
                                     pos1 = null
                                     pos2 = null
-                                    changeDrawer()
                                 }
                             }, 500)
                         }
                     })
                 })
-                changeDrawer()
+                changeDrawer(false)
                 return true
             default:
                 return false

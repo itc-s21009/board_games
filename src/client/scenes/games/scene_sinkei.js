@@ -1,7 +1,7 @@
 import {BoardGameScene} from "../board_game_scene";
-import {HEIGHT, SCENE_SINKEI, WIDTH} from "../scene_loader";
-import {createCircleNumber, createText, drawBackground} from "../../components";
-import {BG_IN_GAME, COLOR_DIVIDER, COLOR_GAME_SECOND, COLOR_GAME_THIRD} from "../../game";
+import {HEIGHT, SCENE_SINKEI, SCENE_TITLE, WIDTH} from "../scene_loader";
+import {createButton, createCircleNumber, createText, drawBackground, drawBlur, drawWindow} from "../../components";
+import {BG_IN_GAME, COLOR_DIVIDER, COLOR_GAME_FIRST, COLOR_GAME_SECOND, COLOR_GAME_THIRD} from "../../game";
 import {CARDS} from "../../cards";
 
 export class SceneSinkei extends BoardGameScene {
@@ -169,6 +169,9 @@ export class SceneSinkei extends BoardGameScene {
         this.socketOn('sinkei_set', ({x, y}, type) => {
             setCard(x, y, type)
         })
+        this.socketOn('sinkei_delete', ({x, y}) => {
+            setCard(x, y, null)
+        })
         this.socketOn('sinkei_result', (pos1, pos2, isEqual) => {
 
         })
@@ -178,6 +181,26 @@ export class SceneSinkei extends BoardGameScene {
                 return
             }
             setScore(victim, score)
+        })
+        this.socketOnce('sinkei_end', (scoreboard) => {
+            console.log(scoreboard)
+            let placement = 0
+            for (let i = 0; i < scoreboard.length; i++) {
+                const score = scoreboard[i]
+                if (isMyself(score)) {
+                    placement = i+1
+                    break
+                }
+            }
+            drawBlur(this)
+            drawWindow(this, WIDTH / 2, 144, 285, 393, COLOR_GAME_FIRST)
+            createText(this, WIDTH / 2, 144 + 91/2, `ゲーム終了\n順位：${placement} 位`)
+
+            const objBtnBack = createButton(this, WIDTH / 2, 466, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})
+            objBtnBack.setOnClick(() => {
+                this.moveTo(SCENE_TITLE)
+                this.clearHistory()
+            })
         })
     }
 }

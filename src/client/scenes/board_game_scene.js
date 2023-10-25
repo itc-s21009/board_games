@@ -61,8 +61,8 @@ export class BoardGameScene extends Phaser.Scene {
             return
         }
         this.eventsListening.push(eventName)
-        socket.once(eventName, () => {
-            listener()
+        socket.once(eventName, (...args) => {
+            listener(...args)
             this.eventsListening = this.eventsListening.filter((d) => d !== eventName)
         })
     }
@@ -72,7 +72,16 @@ export class BoardGameScene extends Phaser.Scene {
         socket.off(eventName)
     }
 
+    socketOffAll() {
+        this.eventsListening.forEach((eventName) => socket.off(eventName))
+        this.eventsListening = []
+    }
+
     socketEmit(eventName, ...args) {
         socket.emit(eventName, ...args)
+    }
+
+    clearHistory() {
+        this.internalData.prevScenes = []
     }
 }
