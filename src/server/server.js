@@ -124,11 +124,6 @@ const startGame = (roomId) => {
                 const cardsCount = ROWS * COLUMNS
                 let cardsRemain = cardsCount
                 let cards = []
-                for (let j = 0; j < 2; j++) {
-                    for (let i = 0; i < cardsCount/2; i++) {
-                        cards.push(CARDS[Object.keys(CARDS)[i]])
-                    }
-                }
                 const shuffle = (array) => {
                     const newArray = [...array]
                     for (let i = array.length-1; i >= 0; i--) {
@@ -143,6 +138,21 @@ const startGame = (roomId) => {
                         newArray.push(array.slice(i, i + chunkSize))
                     }
                     return newArray
+                }
+                // 全ての柄の１〜１３までのカード（シャッフルもする）
+                let deck = shuffle(
+                    Object.values(CARDS).slice(0, 52)
+                        .map((card) => ({id: card, suit: card.slice(0, -3), number: card.slice(-2)}))
+                )
+                // 同じ数字のペアができるように、必要な枚数を配列cardsに入れる
+                for (let i = 0; i < cardsCount / 2; i++) {
+                    const randomIndex = Math.floor(Math.random() * deck.length)
+                    const randomCard = deck.splice(randomIndex, 1)[0]
+                    cards.push(randomCard.id)
+                    // randomCard と同じ数字で、違う柄のカードを引く
+                    const matchingCard =　deck.find((card) => card.number === randomCard.number)
+                    const matchingCardIndex = deck.indexOf(matchingCard)
+                    cards.push(deck.splice(matchingCardIndex, 1)[0].id)
                 }
                 cards = shuffle(cards)
                 cards = chunkArray(cards, COLUMNS)
