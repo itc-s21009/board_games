@@ -136,6 +136,24 @@ export class SceneSinkei extends BoardGameScene {
         const getScore = (player) => scores[player.id].getScore()
         const setScore = (player, score) => scores[player.id].setScore(score)
 
+        let timerCount
+        let timerId
+        const setTimer = (sec) => {
+            if (timerId) {
+                clearInterval(timerId)
+            }
+            timerCount = sec
+            const task = () => {
+                objTimer.setNumber(timerCount)
+                if (--timerCount < 0) {
+                    clearInterval(timerId)
+                }
+            }
+            task()
+            timerId = setInterval(task, 1000)
+        }
+
+        this.socketOn('sinkei_timer', setTimer)
         this.socketOn('sinkei_areasize', (data) => {
             ROWS = data.ROWS
             COLUMNS = data.COLUMNS
