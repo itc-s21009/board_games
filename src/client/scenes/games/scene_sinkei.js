@@ -23,7 +23,7 @@ export class SceneSinkei extends BoardGameScene {
     create() {
         drawBackground(this, BG_IN_GAME)
         const objTextState = createText(this, WIDTH / 2, 24, '', {fontSize: 16})
-        createCircleNumber(this, 320 + 50/2, 5 + 25/2 + 25/2, 25, COLOR_GAME_SECOND, 10)
+        const objTimer = createCircleNumber(this, 320 + 50/2, 5 + 25/2 + 25/2, 25, COLOR_GAME_SECOND, 0)
 
         let ROWS
         let COLUMNS
@@ -183,6 +183,7 @@ export class SceneSinkei extends BoardGameScene {
             setScore(victim, score)
         })
         this.socketOnce('sinkei_end', (scoreboard) => {
+            clearInterval(timerId)
             let placement = 0
             for (let i = 0; i < scoreboard.length; i++) {
                 const score = scoreboard[i]

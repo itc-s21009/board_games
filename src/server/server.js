@@ -163,6 +163,25 @@ const startGame = (roomId) => {
                     scores[player.id] = score
                     io.to(roomId).emit('sinkei_setscore', playerIndex, score)
                 }
+                let timerCount
+                let timerId
+                const setTimer = (sec) => {
+                    if (timerId) {
+                        clearInterval(timerId)
+                    }
+                    timerCount = sec
+                    io.to(roomId).emit('sinkei_timer', sec)
+                    const task = () => {
+                        if (--timerCount < 0) {
+                            clearInterval(timerId)
+                            if (pos1) io.to(roomId).emit('sinkei_set', pos1, CARDS.BACK)
+                            if (pos2) io.to(roomId).emit('sinkei_set', pos2, CARDS.BACK)
+                            changeDrawer()
+                        }
+                    }
+                    task()
+                    timerId = setInterval(task, 1000)
+                }
                 const changeDrawer = (change=true) => {
                     if (change) {
                         drawerPointer = (++drawerPointer) % room.players.length
@@ -170,8 +189,10 @@ const startGame = (roomId) => {
                     io.to(roomId).emit('sinkei_drawer', drawerPointer)
                     drawer = room.players[drawerPointer]
                     drawCount = 0
+                    pos1 = null
+                    pos2 = null
+                    setTimer(15)
                 }
-                console.log(room.players)
                 room.players.forEach((player) => {
                     const socket = getSocket(player)
                     socket.on('sinkei_pick', (position) => {
@@ -218,8 +239,6 @@ const startGame = (roomId) => {
                                         io.to(roomId).emit('sinkei_set', pos2, CARDS.BACK)
                                         changeDrawer()
                                     }
-                                    pos1 = null
-                                    pos2 = null
                                 }
                             }, 500)
                         }
