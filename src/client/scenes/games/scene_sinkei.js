@@ -43,10 +43,15 @@ export class SceneSinkei extends BoardGameScene {
         const setCard = (x, y, type) => {
             cards[y][x].type = type
             if (cards[y][x].object) {
-                const scale = cards[y][x].object.scaleX
-                cards[y][x].object.setTexture(type)
-                cards[y][x].object.setScale(scale)
-                cards[y][x].object.setData('card', type)
+                if (type) {
+                    const scale = cards[y][x].object.scaleX
+                    cards[y][x].object.setTexture(type)
+                    cards[y][x].object.setScale(scale)
+                    cards[y][x].object.setData('card', type)
+                } else {
+                    cards[y][x].object.destroy()
+                    delete cards[y][x].object
+                }
             } else {
                 drawCard(x, y, type)
             }
