@@ -193,6 +193,9 @@ const startGame = (roomId) => {
                     pos2 = null
                     setTimer(15)
                 }
+                // カードのIDの末尾２文字を比較して、同じ数字であるかをチェックする
+                // 'club_01' と 'diamond_01' の場合は true
+                const isEqualNumber = (card1, card2) => card1.slice(-2) === card2.slice(-2)
                 room.players.forEach((player) => {
                     const socket = getSocket(player)
                     socket.on('sinkei_pick', (position) => {
@@ -207,7 +210,7 @@ const startGame = (roomId) => {
                                     pos1 = {x, y}
                                 } else if (!pos2) {
                                     pos2 = {x, y}
-                                    const isEqual = cards[pos1.y][pos1.x] === cards[pos2.y][pos2.x]
+                                    const isEqual = isEqualNumber(cards[pos1.y][pos1.x], cards[pos2.y][pos2.x])
                                     io.to(roomId).emit('sinkei_result', pos1, pos2, isEqual)
                                     if (isEqual) {
                                         io.to(roomId).emit('sinkei_delete', pos1)
