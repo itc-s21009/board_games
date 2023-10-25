@@ -167,5 +167,12 @@ export class SceneSinkei extends BoardGameScene {
         this.socketOn('sinkei_result', (pos1, pos2, isEqual) => {
 
         })
+        this.socketOn('sinkei_setscore', (playerIndex, score) => {
+            const victim = this.players[playerIndex]
+            if (!victim) {
+                return
+            }
+            setScore(victim, score)
+        })
     }
 }

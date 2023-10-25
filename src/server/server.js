@@ -151,6 +151,17 @@ const startGame = (roomId) => {
                 let drawCount = 0
                 let pos1
                 let pos2
+                const scores = {}
+                room.players.forEach((player) => scores[player.id] = 0)
+                const getScore = (player) => scores[player.id]
+                const setScore = (player, score) => {
+                    const playerIndex = room.players.indexOf(player)
+                    if (playerIndex === -1) {
+                        return
+                    }
+                    scores[player.id] = score
+                    io.to(roomId).emit('sinkei_setscore', playerIndex, score)
+                }
                 const changeDrawer = () => {
                     io.to(roomId).emit('sinkei_drawer', drawerPointer)
                     drawer = room.players[drawerPointer]
@@ -177,6 +188,7 @@ const startGame = (roomId) => {
                                     if (isEqual) {
                                         io.to(roomId).emit('sinkei_delete', pos1)
                                         io.to(roomId).emit('sinkei_delete', pos2)
+                                        setScore(player, getScore(player) + 2)
                                     } else {
                                         io.to(roomId).emit('sinkei_set', pos1, CARDS.BACK)
                                         io.to(roomId).emit('sinkei_set', pos2, CARDS.BACK)
