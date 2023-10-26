@@ -10,7 +10,7 @@ export class BoardGameScene extends Phaser.Scene {
 
         this.internalData.prevScenes = this.internalData.prevScenes ?? []
         if (!this.internalData.player) {
-            fetch(`http://localhost:8080/api/session`, {withCredentials: true})
+            fetch(`./api/session`, {withCredentials: true})
                 .then((r) => r.json())
                 .then((data) => {
                     const id = data.id
