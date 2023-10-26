@@ -353,14 +353,32 @@ io.on('connection', (socket) => {
     })
 })
 
+// {queueId: count}
+const forceStartCount = {}
+// キューをチェックする間隔（秒）
+const QUEUE_INTERVAL = 1
+// 最低人数に達してから、スタートさせるまでの時間（秒）
+const FORCESTART_THRESHOLD = 10
+
 // 3秒ごとに全ての待ち列を確認して、最大人数に達していれば待っていた順で追い出していく
 setInterval(() => {
     Object.keys(queues).forEach((queueId) => {
         if (queueId.startsWith('queue')) {
             const queue = queues[queueId]
-            const maxPlayers = queue.gameData.minPlayers
+            const minPlayers = queue.gameData.minPlayers
+            const maxPlayers = queue.gameData.maxPlayers
             console.log(`${queueId}: ${queue.players.length}/${maxPlayers}`)
-            if (queue.players.length >= maxPlayers) {
+            if (queue.players.length >= minPlayers) {
+                if (!forceStartCount[queueId]) {
+                    forceStartCount[queueId] = 1
+                } else {
+                    forceStartCount[queueId]++
+                }
+            } else {
+                delete forceStartCount[queueId]
+            }
+            if (queue.players.length >= maxPlayers || forceStartCount[queueId] > FORCESTART_THRESHOLD / QUEUE_INTERVAL) {
+                delete forceStartCount[queueId]
                 const playersToGo = queue.players.slice(0, maxPlayers)
                 queue.players = queue.players.slice(maxPlayers)
                 playersToGo.forEach((p) => {
@@ -387,4 +405,4 @@ setInterval(() => {
             }
         }
     })
-}, 3000)
+}, QUEUE_INTERVAL * 1000)
