@@ -54,7 +54,7 @@ const queues = {}
 // {socket: socket, player: {id: playerId, name: playerName}}
 const sockets = []
 
-const createQueueRoom = (roomId, gameData) => {
+const createRoom = (roomId, gameData) => {
     if (queues[roomId]) {
         return
     }
@@ -65,14 +65,16 @@ const createPrivateRoom = (gameData) => {
     const generateRoomId = () => {
         let roomId;
         do {
-            roomId = Math.floor(Math.random() * 99999)
+            roomId = Math.floor(Math.random() * 99999).toString()
         } while (queues[roomId])
         return roomId
     }
     const roomId = generateRoomId()
-    createQueueRoom(roomId, gameData)
+    createRoom(roomId, gameData)
     return roomId
 }
+
+const isQueue = (roomId) => roomId.startsWith('queue')
 
 const joinRoom = (socket, roomId) => {
     const room = queues[roomId]
@@ -93,11 +95,13 @@ const leaveRoom = (socket, roomId) => {
         return false
     }
     socket.leave(roomId)
-    room.players = room.players.filter((p) => p.id !== player.id)
-    if (room.players.length <= 0) {
-        delete queues[roomId]
-    } else {
-        io.to(roomId).emit('player_count', room.players.length)
+    if (isQueue(roomId)) {
+        room.players = room.players.filter((p) => p.id !== player.id)
+        if (room.players.length <= 0) {
+            delete queues[roomId]
+        } else {
+            io.to(roomId).emit('player_count', room.players.length)
+        }
     }
     return true
 }
@@ -163,14 +167,14 @@ const startGame = (roomId) => {
                 let pos1
                 let pos2
                 const scores = {}
-                room.players.forEach((player) => scores[player.id] = 0)
-                const getScore = (player) => scores[player.id]
+                room.players.forEach((player) => scores[player.id] = {name: player.name, score: 0})
+                const getScore = (player) => scores[player.id].score
                 const setScore = (player, score) => {
                     const playerIndex = room.players.indexOf(player)
                     if (playerIndex === -1) {
                         return
                     }
-                    scores[player.id] = score
+                    scores[player.id].score = score
                     io.to(roomId).emit('sinkei_setscore', playerIndex, score)
                 }
                 let timerCount
@@ -206,6 +210,17 @@ const startGame = (roomId) => {
                 // カードのIDの末尾２文字を比較して、同じ数字であるかをチェックする
                 // 'club_01' と 'diamond_01' の場合は true
                 const isEqualNumber = (card1, card2) => card1.slice(-2) === card2.slice(-2)
+                const createScoreboard = () => {
+                    const nameScores = Object.keys(scores)
+                        .map((playerId) => (
+                            {
+                                id: playerId.substring(0, 10),
+                                name: scores[playerId].name,
+                                score: scores[playerId].score
+                            }
+                        ))
+                    return nameScores.sort((a, b) => a.score < b.score ? 1 : -1)
+                }
                 room.players.forEach((player) => {
                     const socket = getSocket(player)
                     socket.on('sinkei_pick', (position) => {
@@ -228,17 +243,7 @@ const startGame = (roomId) => {
                                         setScore(player, getScore(player) + 2)
                                         cardsRemain -= 2
                                         if (cardsRemain <= 0) {
-                                            const nameScores = Object.keys(scores)
-                                                .map((playerId) => {
-                                                    const p = room.players.find((p) => p.id === playerId)
-                                                    return {
-                                                        id: p.id.substring(0, 10),
-                                                        name: p.name,
-                                                        score: scores[playerId]
-                                                    }
-                                                })
-                                            const scoreboard = nameScores.sort((a, b) => a.score < b.score ? 1 : -1)
-                                            io.to(roomId).emit('sinkei_end', scoreboard)
+                                            io.to(roomId).emit('sinkei_end', createScoreboard())
                                             room.players.forEach((p) => {
                                                 const socket = getSocket(p)
                                                 socket.removeAllListeners('sinkei_pick')
@@ -253,7 +258,15 @@ const startGame = (roomId) => {
                                         changeDrawer()
                                     }
                                 }
-                            }, 500)
+                            }, 1000)
+                        }
+                    })
+                    socket.on('disconnecting', () => {
+                        const playerIndex = room.players.indexOf(player)
+                        socket.to(roomId).emit('sinkei_disconnect', playerIndex)
+                        room.players.splice(playerIndex, 1)
+                        if (room.players.length <= 1) {
+                            socket.to(roomId).emit('sinkei_end', createScoreboard())
                         }
                     })
                 })
@@ -313,7 +326,7 @@ io.on('connection', (socket) => {
     socket.on('join_normal', (gameData, callback) => {
         const queueId = `queue_normal_${gameData.id}`
         if (!queues[queueId]) {
-            createQueueRoom(queueId, gameData)
+            createRoom(queueId, gameData)
         }
         if (joinRoom(socket, queueId)) {
             const playerCount = queues[queueId].players.length
@@ -363,7 +376,7 @@ const FORCESTART_THRESHOLD = 10
 // 3秒ごとに全ての待ち列を確認して、最大人数に達していれば待っていた順で追い出していく
 setInterval(() => {
     Object.keys(queues).forEach((queueId) => {
-        if (queueId.startsWith('queue')) {
+        if (isQueue(queueId)) {
             const queue = queues[queueId]
             const minPlayers = queue.gameData.minPlayers
             const maxPlayers = queue.gameData.maxPlayers

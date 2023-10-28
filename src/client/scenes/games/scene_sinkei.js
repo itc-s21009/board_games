@@ -132,6 +132,9 @@ export class SceneSinkei extends BoardGameScene {
             const container = this.add.container(x, y, [objRect, objText, objScore])
             container.setScore = objScore.setNumber
             container.getScore = objScore.getNumber
+            container.handleDisconnect = () => {
+                objRect.setFillStyle(COLOR_DIVIDER)
+            }
             return container
         }
         const getScore = (player) => scores[player.id].getScore()
@@ -174,7 +177,7 @@ export class SceneSinkei extends BoardGameScene {
 
         const isMyself = (victim) => player.id.startsWith(victim.id)
 
-        this.socketOn('sinkei_drawer', (drawerPointer) => {
+        const setDrawer = (drawerPointer) => {
             drawer = this.players[drawerPointer]
             if (isMyself(drawer)) {
                 drawCount = 0
@@ -191,7 +194,8 @@ export class SceneSinkei extends BoardGameScene {
                     }
                 })
             }
-        })
+        }
+        this.socketOn('sinkei_drawer', setDrawer)
         this.socketOn('sinkei_set', ({x, y}, type) => {
             setCard(x, y, type)
         })
@@ -207,6 +211,14 @@ export class SceneSinkei extends BoardGameScene {
                 return
             }
             setScore(victim, score)
+        })
+        this.socketOn('sinkei_disconnect', (playerIndex) => {
+            const victim = this.players[playerIndex]
+            if (!victim) {
+                return
+            }
+            scores[victim.id].handleDisconnect()
+            this.players.splice(playerIndex, 1)
         })
         this.socketOnce('sinkei_end', (scoreboard) => {
             clearInterval(timerId)
