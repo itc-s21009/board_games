@@ -76,7 +76,8 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
                         gameData: gameData,
                         mode: mode,
                         initialPlayerCount: 1,
-                        roomId: roomId
+                        roomId: roomId,
+                        isOwner: true
                     })
                 })
                 return

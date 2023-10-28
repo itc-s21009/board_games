@@ -20,6 +20,7 @@ export class SceneMatching extends BoardGameScene {
         this.roomId = data.roomId
         this.mode = data.mode
         this.initialPlayerCount = data.initialPlayerCount
+        this.isOwner = data.isOwner ?? false
     }
 
     create() {
@@ -50,6 +51,25 @@ export class SceneMatching extends BoardGameScene {
             }
             this.backToPrevScene()
         })
+        if (this.mode === MODE_FRIEND_MATCH && this.isOwner) {
+            btnBack.y = 569
+            const btnStart = createButton(this, WIDTH / 2, 409, 200, 100, COLOR_SECOND,'ゲーム開始！', {fontSize: 32})
+            btnStart.setOnClick(() => {
+                socket.emit('start_private', this.roomId, (error) => {
+                    if (!error) {
+                        return
+                    }
+                    const objBlur = drawBlur(this)
+                    const objWindow = drawWindow(this, WIDTH / 2, HEIGHT / 2 - 70, 340, 150, COLOR_FIRST)
+                    const objText = createText(this, WIDTH / 2, HEIGHT / 2 - 40, error)
+                    const objBtnBack = createButton(this, WIDTH / 2, HEIGHT / 2, 200, 50, COLOR_SECOND, 'OK', {fontSize: 24})
+                    objBtnBack.setOnClick(() => {
+                        [objBlur, objWindow, objText, objBtnBack]
+                            .forEach((obj) => obj.destroy())
+                    })
+                })
+            })
+        }
         this.socketOn('match_found', (players) => {
             drawBlur(this)
             drawWindow(this, WIDTH / 2, 84, 300, 469, COLOR_FIRST)
