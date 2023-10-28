@@ -54,6 +54,14 @@ const queues = {}
 // {socket: socket, player: {id: playerId, name: playerName}}
 const sockets = []
 
+const generateRoomId = () => {
+    let roomId;
+    do {
+        roomId = Math.floor(Math.random() * 99999).toString()
+    } while (queues[roomId])
+    return roomId
+}
+
 const createRoom = (roomId, gameData) => {
     if (queues[roomId]) {
         return
@@ -62,21 +70,16 @@ const createRoom = (roomId, gameData) => {
 }
 
 const createPrivateRoom = (gameData) => {
-    const generateRoomId = () => {
-        let roomId;
-        do {
-            roomId = Math.floor(Math.random() * 99999).toString()
-        } while (queues[roomId])
-        return roomId
-    }
     const roomId = generateRoomId()
     createRoom(roomId, gameData)
     return roomId
 }
 
-const isQueue = (roomId) => roomId.startsWith('queue')
+const isQueue = (roomId) => roomId.toString().startsWith('queue')
+const isGameRoom = (roomId) => roomId.toString().startsWith('game')
 
 const joinRoom = (socket, roomId) => {
+    roomId = roomId.toString()
     const room = queues[roomId]
     const player = getPlayer(socket)
     if (!room || room.players.filter((p) => p.id === player.id).length > 0) {
@@ -89,13 +92,14 @@ const joinRoom = (socket, roomId) => {
 }
 
 const leaveRoom = (socket, roomId) => {
+    roomId = roomId.toString()
     const room = queues[roomId]
     const player = getPlayer(socket)
     if (!room) {
         return false
     }
     socket.leave(roomId)
-    if (isQueue(roomId)) {
+    if (!isGameRoom(roomId)) {
         room.players = room.players.filter((p) => p.id !== player.id)
         if (room.players.length <= 0) {
             delete queues[roomId]
@@ -107,6 +111,7 @@ const leaveRoom = (socket, roomId) => {
 }
 
 const startGame = (roomId) => {
+    roomId = roomId.toString()
     const room = queues[roomId]
     if (!room) {
         return false
@@ -296,6 +301,7 @@ const startGame = (roomId) => {
 }
 
 const dequeuePlayersAndGo = (roomId) => {
+    roomId = roomId.toString()
     const room = queues[roomId]
     if (!room) {
         return false
@@ -318,7 +324,8 @@ const dequeuePlayersAndGo = (roomId) => {
         if (disconnected) {
             playersToGo.forEach((p) => getSocket(p).emit('match_disconnected'))
         } else {
-            const roomId = createPrivateRoom(room.gameData)
+            const roomId = `game_${generateRoomId()}`
+            createRoom(roomId, room.gameData)
             console.log(`game room: ${roomId}`)
             playersToGo.forEach((p) => joinRoom(getSocket(p), roomId))
             io.to(roomId).emit('match_go')
