@@ -265,6 +265,9 @@ const startGame = (roomId) => {
                         const playerIndex = room.players.indexOf(player)
                         socket.to(roomId).emit('sinkei_disconnect', playerIndex)
                         room.players.splice(playerIndex, 1)
+                        if (drawerPointer === playerIndex) {
+                            changeDrawer(false)
+                        }
                         if (room.players.length <= 1) {
                             socket.to(roomId).emit('sinkei_end', createScoreboard())
                         }
