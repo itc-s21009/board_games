@@ -321,7 +321,14 @@ io.on('connection', (socket) => {
                 sessionId: id
             }
         }).then((user) => {
-            sockets.push({socket: socket, player: {id: id, name: user.name}})
+            const player = {id: id, name: user.name}
+            if (getSocket(player)) {
+                console.log('multiple tabs detected')
+                callback(false)
+                socket.disconnect(true)
+                return
+            }
+            sockets.push({socket: socket, player: player})
             callback(user.name)
         })
     })
@@ -366,6 +373,12 @@ io.on('connection', (socket) => {
         socket.rooms.forEach((room) => {
             leaveRoom(socket, room)
         })
+        const socketData = sockets.find((data) => data.socket === socket)
+        const socketDataIndex = sockets.indexOf(socketData)
+        if (socketDataIndex === -1) {
+            return
+        }
+        sockets.splice(socketDataIndex, 1)
     })
 })
 
