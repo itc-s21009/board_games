@@ -1,7 +1,11 @@
-body {
+html, body {
+    overflow: hidden;
+    height: 100%;
     text-align: center;
 }
 
 canvas {
-    border: 3px solid #BDBDBD;
+    height: 100%;
+    border-left: 3px solid #BDBDBD;
+    border-right: 3px solid #BDBDBD;
 }
