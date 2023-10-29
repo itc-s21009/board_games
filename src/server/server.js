@@ -268,7 +268,7 @@ const startGame = (roomId) => {
                     })
                     socket.on('disconnecting', () => {
                         const playerIndex = room.players.indexOf(player)
-                        socket.to(roomId).emit('sinkei_disconnect', playerIndex)
+                        socket.to(roomId).emit('game_disconnect', playerIndex)
                         room.players.splice(playerIndex, 1)
                         if (drawerPointer === playerIndex) {
                             changeDrawer(false)
@@ -296,7 +296,21 @@ const startGame = (roomId) => {
     })
     setTimeout(() => {
         // TODO ５秒以内に準備完了できなかったプレイヤーを退出させる処理
-        start()
+        let cancelled = false
+        playersNotReady.forEach((notReadyPlayer) => {
+            const socket = getSocket(notReadyPlayer)
+            const playerIndex = room.players.indexOf(notReadyPlayer)
+            leaveRoom(socket, roomId)
+            socket.emit('game_timeout')
+            io.to(roomId).emit('game_disconnect', playerIndex)
+            room.players.splice(playerIndex, 1)
+            cancelled = room.players.length <= 1
+        })
+        if (cancelled) {
+            io.to(roomId).emit('game_cancelled')
+        } else {
+            start()
+        }
     }, 5000)
 }
 

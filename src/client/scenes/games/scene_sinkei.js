@@ -212,13 +212,39 @@ export class SceneSinkei extends BoardGameScene {
             }
             setScore(victim, score)
         })
-        this.socketOn('sinkei_disconnect', (playerIndex) => {
+        this.socketOn('game_disconnect', (playerIndex) => {
             const victim = this.players[playerIndex]
             if (!victim) {
                 return
             }
             scores[victim.id].handleDisconnect()
             this.players.splice(playerIndex, 1)
+        })
+        this.socketOn('game_cancelled', () => {
+            clearInterval(timerId)
+            drawBlur(this)
+            drawWindow(this, WIDTH / 2, 204, 285, 177, COLOR_GAME_FIRST)
+            createText(this, WIDTH / 2, 224, `ゲームを開始\nできませんでした`)
+                .setAlign('center')
+                .setOrigin(0.5, 0)
+            const objBtnBack = createButton(this, WIDTH / 2, 306, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})
+            objBtnBack.setOnClick(() => {
+                this.moveTo(SCENE_TITLE)
+                this.clearHistory()
+            })
+        })
+        this.socketOn('game_timeout', () => {
+            clearInterval(timerId)
+            drawBlur(this)
+            drawWindow(this, WIDTH / 2, 204, 285, 177, COLOR_GAME_FIRST)
+            createText(this, WIDTH / 2, 224, `ゲームを読み込み\nできませんでした`)
+                .setAlign('center')
+                .setOrigin(0.5, 0)
+            const objBtnBack = createButton(this, WIDTH / 2, 306, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})
+            objBtnBack.setOnClick(() => {
+                this.moveTo(SCENE_TITLE)
+                this.clearHistory()
+            })
         })
         this.socketOnce('sinkei_end', (scoreboard) => {
             clearInterval(timerId)
