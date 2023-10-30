@@ -11,7 +11,66 @@ datasource db {
 }
 
 model User {
-  id        Int    @id @default(autoincrement())
-  sessionId String @unique
-  name      String
+  id                   Int           @id @default(autoincrement())
+  sessionId            String        @unique
+  name                 String
+  Stat                 Stat[]
+  Rating               Rating[]
+  MatchResult_as_user1 MatchResult[] @relation("user1")
+  MatchResult_as_user2 MatchResult[] @relation("user2")
+  MatchResult_as_user3 MatchResult[] @relation("user3")
+  MatchResult_as_user4 MatchResult[] @relation("user4")
+}
+
+model Game {
+  id          Int           @id @default(autoincrement())
+  name        String
+  Stat        Stat[]
+  Rating      Rating[]
+  MatchResult MatchResult[]
+}
+
+model Stat {
+  id      Int     @id @default(autoincrement())
+  user    User    @relation(fields: [userId], references: [id])
+  game    Game    @relation(fields: [gameId], references: [id])
+  isRated Boolean @default(false)
+  wins    Int     @default(0)
+  losses  Int     @default(0)
+  draws   Int     @default(0)
+  userId  Int
+  gameId  Int
+
+  @@unique(fields: [userId, gameId, isRated], name: "stat_identifier")
+}
+
+model Rating {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id])
+  game   Game @relation(fields: [gameId], references: [id])
+  rating Int
+  userId Int
+  gameId Int
+
+  @@unique(fields: [userId, gameId], name: "rating_identifier")
+}
+
+model MatchResult {
+  id       Int      @id @default(autoincrement())
+  game     Game     @relation(fields: [gameId], references: [id])
+  isRated  Boolean
+  datetime DateTime
+  user1    User     @relation("user1", fields: [userId1], references: [id])
+  user2    User     @relation("user2", fields: [userId2], references: [id])
+  user3    User?    @relation("user3", fields: [userId3], references: [id])
+  user4    User?    @relation("user4", fields: [userId4], references: [id])
+  score1   Int
+  score2   Int
+  score3   Int?
+  score4   Int?
+  gameId   Int
+  userId1  Int
+  userId2  Int
+  userId3  Int?
+  userId4  Int?
 }
