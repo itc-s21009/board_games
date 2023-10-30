@@ -4,8 +4,12 @@ module.exports = (room) => {
     const roomId = room.id
     // (4, 5), (5, 6), (6, 7), (6, 8)
     // がちょうどいい
-    const ROWS = 5
-    const COLUMNS = 6
+    const SIZE_SET = [
+        {ROWS: 5, COLUMNS: 6}, // 2人, 30枚
+        {ROWS: 6, COLUMNS: 7}, // 3人, 42枚
+        {ROWS: 6, COLUMNS: 8}  // 4人, 48枚
+    ]
+    const {ROWS, COLUMNS} = SIZE_SET[room.players.length - 2]
     io.to(roomId).emit('sinkei_areasize', {ROWS: ROWS, COLUMNS: COLUMNS})
 
     const cardsCount = ROWS * COLUMNS
@@ -37,7 +41,7 @@ module.exports = (room) => {
         const randomCard = deck.splice(randomIndex, 1)[0]
         cards.push(randomCard.id)
         // randomCard と同じ数字で、違う柄のカードを引く
-        const matchingCard =　deck.find((card) => card.number === randomCard.number)
+        const matchingCard = deck.find((card) => card.number === randomCard.number)
         const matchingCardIndex = deck.indexOf(matchingCard)
         cards.push(deck.splice(matchingCardIndex, 1)[0].id)
     }
