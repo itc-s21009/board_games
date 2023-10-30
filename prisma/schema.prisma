@@ -24,7 +24,7 @@ model User {
 
 model Game {
   id          Int           @id @default(autoincrement())
-  name        String
+  name        String        @unique
   Stat        Stat[]
   Rating      Rating[]
   MatchResult MatchResult[]

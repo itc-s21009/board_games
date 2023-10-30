@@ -1,7 +1,10 @@
+const {PrismaClient} = require('@prisma/client')
+const prisma = new PrismaClient()
 module.exports = (room) => {
     const CARDS = require("../../server/cards");
     const {io, getSocket, leaveRoom} = require("../server");
     const roomId = room.id
+    const playersJoined = [...room.players]
     // (4, 5), (5, 6), (6, 7), (6, 8)
     // がちょうどいい
     const SIZE_SET = [
@@ -64,6 +67,8 @@ module.exports = (room) => {
         scores[player.id].score = score
         io.to(roomId).emit('sinkei_setscore', playerIndex, score)
     }
+    let duration = 0
+    let durationTimerId = setInterval(() => duration++, 1000)
     let timerCount
     let timerId
     const setTimer = (sec) => {
@@ -108,6 +113,48 @@ module.exports = (room) => {
             ))
         return nameScores.sort((a, b) => a.score < b.score ? 1 : -1)
     }
+    let ended = false
+    const handleEnd = () => {
+        if (ended) {
+            return
+        }
+        ended = true
+        clearInterval(durationTimerId)
+        io.to(roomId).emit('sinkei_end', createScoreboard())
+        room.players.forEach((p) => {
+            const socket = getSocket(p)
+            socket.removeAllListeners('sinkei_pick')
+            leaveRoom(socket, roomId)
+        })
+        const userData = {}
+        const userColumnNames = ['user1', 'user2', 'user3', 'user4']
+        const scoreColumnNames = ['score1', 'score2', 'score3', 'score4']
+        for (let i = 0; i < playersJoined.length; i++) {
+            const userColumnName = userColumnNames[i]
+            const scoreColumnName = scoreColumnNames[i]
+            const player = playersJoined[i]
+            if (player) {
+                userData[userColumnName] = {
+                    connect: {
+                        sessionId: player.id
+                    }
+                }
+                userData[scoreColumnName] = getScore(player)
+            }
+        }
+        prisma.matchResult.create({
+            data: {
+                game: {
+                    connect: {
+                        name: 'sinkei'
+                    }
+                },
+                isRated: false,
+                duration: duration,
+                ...userData
+            },
+        })
+    }
     room.players.forEach((player) => {
         const socket = getSocket(player)
         socket.on('sinkei_pick', (position) => {
@@ -130,12 +177,7 @@ module.exports = (room) => {
                             setScore(player, getScore(player) + 2)
                             cardsRemain -= 2
                             if (cardsRemain <= 0) {
-                                io.to(roomId).emit('sinkei_end', createScoreboard())
-                                room.players.forEach((p) => {
-                                    const socket = getSocket(p)
-                                    socket.removeAllListeners('sinkei_pick')
-                                    leaveRoom(socket, roomId)
-                                })
+                                handleEnd()
                             } else {
                                 changeDrawer(false)
                             }
@@ -156,7 +198,7 @@ module.exports = (room) => {
                 changeDrawer(false)
             }
             if (room.players.length <= 1) {
-                socket.to(roomId).emit('sinkei_end', createScoreboard())
+                handleEnd()
             }
         })
     })
