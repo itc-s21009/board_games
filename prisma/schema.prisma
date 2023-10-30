@@ -59,7 +59,8 @@ model MatchResult {
   id       Int      @id @default(autoincrement())
   game     Game     @relation(fields: [gameId], references: [id])
   isRated  Boolean
-  datetime DateTime
+  datetime DateTime @default(now())
+  duration Int
   user1    User     @relation("user1", fields: [userId1], references: [id])
   user2    User     @relation("user2", fields: [userId2], references: [id])
   user3    User?    @relation("user3", fields: [userId3], references: [id])
