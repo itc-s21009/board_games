@@ -80,6 +80,18 @@ module.exports = (room) => {
         })
         storeResultsToDatabase(room.gameData.id)
     }
+    const handleDisconnect = (player) => {
+        const playerIndex = room.players.indexOf(player)
+        io.to(roomId).emit('game_disconnect', playerIndex)
+        room.players.splice(playerIndex, 1)
+        if (room.players.length <= 1) {
+            handleEnd()
+        }
+    }
+    room.players.forEach((player) => {
+        const socket = getSocket(player)
+        socket.on('disconnecting', () => handleDisconnect(player))
+    })
 
     // (4, 5), (5, 6), (6, 7), (6, 8)
     // がちょうどいい
@@ -202,13 +214,8 @@ module.exports = (room) => {
         })
         socket.on('disconnecting', () => {
             const playerIndex = room.players.indexOf(player)
-            socket.to(roomId).emit('game_disconnect', playerIndex)
-            room.players.splice(playerIndex, 1)
             if (drawerPointer === playerIndex) {
                 changeDrawer(false)
-            }
-            if (room.players.length <= 1) {
-                handleEnd()
             }
         })
     })
