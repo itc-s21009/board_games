@@ -65,9 +65,9 @@ export const GAME_DAIFUGO = {
     maxPlayers: 4,
     sortScoreInAsc: false
 }
-export const GAME_OSERO = {
-    id: 'osero',
-    title: 'オセロ',
+export const GAME_REVERSI = {
+    id: 'reversi',
+    title: 'リバーシ',
     description: '２人で行うゲームです。\nお馴染みのルールで遊べます。',
     minPlayers: 2,
     maxPlayers: 2,
