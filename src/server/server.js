@@ -126,7 +126,8 @@ const startGame = (roomId) => {
         started = true
         switch(room.gameData.id) {
             case 'sinkei':
-                sinkei(room)
+                const BoardGameSinkei = require('./games/sinkei')
+                new BoardGameSinkei(room).start()
                 return true
             default:
                 return false
