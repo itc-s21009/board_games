@@ -205,7 +205,7 @@ export class SceneSinkei extends BoardGameScene {
         this.socketOn('sinkei_result', (pos1, pos2, isEqual) => {
 
         })
-        this.socketOn('sinkei_setscore', (playerIndex, score) => {
+        this.socketOn('game_setscore', (playerIndex, score) => {
             const victim = this.players[playerIndex]
             if (!victim) {
                 return
@@ -246,7 +246,7 @@ export class SceneSinkei extends BoardGameScene {
                 this.clearHistory()
             })
         })
-        this.socketOnce('sinkei_end', (scoreboard) => {
+        this.socketOnce('game_end', (scoreboard) => {
             clearInterval(timerId)
             let placement = 0
             for (let i = 0; i < scoreboard.length; i++) {

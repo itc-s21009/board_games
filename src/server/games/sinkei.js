@@ -2,9 +2,85 @@ const {PrismaClient} = require('@prisma/client')
 const prisma = new PrismaClient()
 module.exports = (room) => {
     const CARDS = require("../../server/cards");
-    const {io, getSocket, leaveRoom} = require("../server");
+    const {io, getSocket, leaveRoom, registerListeners} = require("../server");
     const roomId = room.id
     const playersJoined = [...room.players]
+    const scores = {}
+    room.players.forEach((player) => scores[player.id] = {name: player.name, score: 0})
+    const getScore = (player) => scores[player.id].score
+    const setScore = (player, score) => {
+        const playerIndex = room.players.indexOf(player)
+        if (playerIndex === -1) {
+            return
+        }
+        scores[player.id].score = score
+        io.to(roomId).emit('game_setscore', playerIndex, score)
+    }
+    let duration = 0
+    let durationTimerId = setInterval(() => duration++, 1000)
+    const createScoreboard = () => {
+        const nameScores = Object.keys(scores)
+            .map((playerId) => (
+                {
+                    id: playerId.substring(0, 10),
+                    name: scores[playerId].name,
+                    score: scores[playerId].score
+                }
+            ))
+        if (room.gameData.sortScoreInAsc) {
+            return nameScores.sort((a, b) => a.score > b.score ? 1 : -1)
+        } else {
+            return nameScores.sort((a, b) => a.score < b.score ? 1 : -1)
+        }
+    }
+    const storeResultsToDatabase = (gameName) => {
+        const userData = {}
+        const userColumnNames = ['user1', 'user2', 'user3', 'user4']
+        const scoreColumnNames = ['score1', 'score2', 'score3', 'score4']
+        for (let i = 0; i < playersJoined.length; i++) {
+            const userColumnName = userColumnNames[i]
+            const scoreColumnName = scoreColumnNames[i]
+            const player = playersJoined[i]
+            if (player) {
+                userData[userColumnName] = {
+                    connect: {
+                        sessionId: player.id
+                    }
+                }
+                userData[scoreColumnName] = getScore(player)
+            }
+        }
+        prisma.matchResult.create({
+            data: {
+                game: {
+                    connect: {
+                        name: gameName
+                    }
+                },
+                isRated: false,
+                duration: duration,
+                ...userData
+            },
+        })
+    }
+    let ended = false
+    const handleEnd = () => {
+        if (ended) {
+            return
+        }
+        ended = true
+        clearInterval(durationTimerId)
+        io.to(roomId).emit('game_end', createScoreboard())
+        room.players.forEach((p) => {
+            const socket = getSocket(p)
+            // socket.removeAllListeners('sinkei_pick')
+            socket.removeAllListeners()
+            leaveRoom(socket, roomId)
+            registerListeners(socket)
+        })
+        storeResultsToDatabase(room.gameData.id)
+    }
+
     // (4, 5), (5, 6), (6, 7), (6, 8)
     // がちょうどいい
     const SIZE_SET = [
@@ -56,19 +132,6 @@ module.exports = (room) => {
     let drawCount = 0
     let pos1
     let pos2
-    const scores = {}
-    room.players.forEach((player) => scores[player.id] = {name: player.name, score: 0})
-    const getScore = (player) => scores[player.id].score
-    const setScore = (player, score) => {
-        const playerIndex = room.players.indexOf(player)
-        if (playerIndex === -1) {
-            return
-        }
-        scores[player.id].score = score
-        io.to(roomId).emit('sinkei_setscore', playerIndex, score)
-    }
-    let duration = 0
-    let durationTimerId = setInterval(() => duration++, 1000)
     let timerCount
     let timerId
     const setTimer = (sec) => {
@@ -102,59 +165,6 @@ module.exports = (room) => {
     // カードのIDの末尾２文字を比較して、同じ数字であるかをチェックする
     // 'club_01' と 'diamond_01' の場合は true
     const isEqualNumber = (card1, card2) => card1.slice(-2) === card2.slice(-2)
-    const createScoreboard = () => {
-        const nameScores = Object.keys(scores)
-            .map((playerId) => (
-                {
-                    id: playerId.substring(0, 10),
-                    name: scores[playerId].name,
-                    score: scores[playerId].score
-                }
-            ))
-        return nameScores.sort((a, b) => a.score < b.score ? 1 : -1)
-    }
-    let ended = false
-    const handleEnd = () => {
-        if (ended) {
-            return
-        }
-        ended = true
-        clearInterval(durationTimerId)
-        io.to(roomId).emit('sinkei_end', createScoreboard())
-        room.players.forEach((p) => {
-            const socket = getSocket(p)
-            socket.removeAllListeners('sinkei_pick')
-            leaveRoom(socket, roomId)
-        })
-        const userData = {}
-        const userColumnNames = ['user1', 'user2', 'user3', 'user4']
-        const scoreColumnNames = ['score1', 'score2', 'score3', 'score4']
-        for (let i = 0; i < playersJoined.length; i++) {
-            const userColumnName = userColumnNames[i]
-            const scoreColumnName = scoreColumnNames[i]
-            const player = playersJoined[i]
-            if (player) {
-                userData[userColumnName] = {
-                    connect: {
-                        sessionId: player.id
-                    }
-                }
-                userData[scoreColumnName] = getScore(player)
-            }
-        }
-        prisma.matchResult.create({
-            data: {
-                game: {
-                    connect: {
-                        name: 'sinkei'
-                    }
-                },
-                isRated: false,
-                duration: duration,
-                ...userData
-            },
-        })
-    }
     room.players.forEach((player) => {
         const socket = getSocket(player)
         socket.on('sinkei_pick', (position) => {

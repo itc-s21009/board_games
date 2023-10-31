@@ -36,14 +36,16 @@ export const GAME_SPEED = {
     title: 'スピード',
     description: '２人で行うゲームです。\n場のカードと数字が繋がるカードを\n出していき、全部出すと勝利です。',
     minPlayers: 2,
-    maxPlayers: 2
+    maxPlayers: 2,
+    sortScoreInAsc: true
 }
 export const GAME_SINKEI = {
     id: 'sinkei',
     title: '神経衰弱',
     description: '２〜４人で行うゲームです。\n場のカードを２枚めくって\n同じ数字であればゲットできます。\nゲットした枚数が多い人が勝利です。',
     minPlayers: 2,
-    maxPlayers: 4
+    maxPlayers: 4,
+    sortScoreInAsc: false
 }
 export const GAME_DAIFUGO = {
     id: 'daifugo',
@@ -60,14 +62,16 @@ export const GAME_DAIFUGO = {
         '\n・Ｑボンバー' +
         '\n・Ｋリバース',
     minPlayers: 4,
-    maxPlayers: 4
+    maxPlayers: 4,
+    sortScoreInAsc: false
 }
 export const GAME_OSERO = {
     id: 'osero',
     title: 'オセロ',
     description: '２人で行うゲームです。\nお馴染みのルールで遊べます。',
     minPlayers: 2,
-    maxPlayers: 2
+    maxPlayers: 2,
+    sortScoreInAsc: false
 }
 
 export const socket = io()

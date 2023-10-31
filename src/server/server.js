@@ -210,12 +210,7 @@ const getSocket = (player) => {
     }
 }
 
-io.on('connection', (socket) => {
-    console.log('user connected')
-    socket.on('disconnect', () => {
-        console.log('user disconnected')
-    })
-
+const registerListeners = (socket) => {
     socket.on('get_name', async (id, callback) => {
         await prisma.user.findUnique({
             where: {
@@ -294,7 +289,9 @@ io.on('connection', (socket) => {
         }
         sockets.splice(socketDataIndex, 1)
     })
-})
+}
+
+io.on('connection', registerListeners)
 
 // {queueId: count}
 const forceStartCount = {}
@@ -328,4 +325,4 @@ setInterval(() => {
     })
 }, QUEUE_INTERVAL * 1000)
 
-module.exports = {io, joinRoom, leaveRoom, getPlayer, getSocket}
+module.exports = {io, joinRoom, leaveRoom, getPlayer, getSocket, registerListeners}
