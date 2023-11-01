@@ -16,6 +16,7 @@ export class SceneReversi extends BoardGameScene {
     preload() {
         this.load.image('black', 'assets/reversi/black.png')
         this.load.image('white', 'assets/reversi/white.png')
+        this.load.image('background', 'assets/reversi/background.png')
     }
 
     create() {
@@ -26,31 +27,54 @@ export class SceneReversi extends BoardGameScene {
         // フィールドを表現する多次元配列になる
         // {type: type, object: objImg}
         const field = []
+        this.add.rectangle(WIDTH / 2, 150, 360, 362, COLOR_REVERSI_BACK)
+            .setStrokeStyle(15, 0x000000)
+            .setOrigin(0.5, 0)
 
         const NONE = 0
         const BLACK = 1
         const WHITE = 2
+
+        let MY_COLOR
+
+        const player = this.getPlayer()
+        let drawer
+        let drawCount = 0
+        let isMyTurn = false
+
+        let pos = {x: 0, y: 0}
 
         const setCell = (x, y, type) => {
             if (!field[y][x]) {
                 return
             }
             const objImg = field[y][x].object
+            field[y][x].type = type
             switch(type) {
                 case BLACK:
-                    objImg.setVisible(true)
                     objImg.setTexture('black')
                     break
                 case WHITE:
-                    objImg.setVisible(true)
                     objImg.setTexture('white')
                     break
                 case NONE:
-                    objImg.setVisible(false)
+                    objImg.setTexture('background')
                     break
                 default:
                     break
             }
+            objImg.setInteractive()
+            objImg.on('pointerover', () => {
+                if (field[y][x].type === NONE && isMyTurn) {
+                    objImg.setTexture(MY_COLOR === BLACK ? 'black' : 'white')
+                    pos = {x, y}
+                }
+            })
+            objImg.on('pointerout', () => {
+                if (field[y][x].type === NONE && isMyTurn) {
+                    objImg.setTexture('background')
+                }
+            })
         }
 
         for (let y = 0; y < 8; y++) {
@@ -74,5 +98,54 @@ export class SceneReversi extends BoardGameScene {
         setCell(3, 4, WHITE)
         setCell(4, 3, WHITE)
         setCell(4, 4, BLACK)
+
+        let timerCount
+        let timerId
+        const setTimer = (sec) => {
+            if (timerId) {
+                clearInterval(timerId)
+            }
+            timerCount = sec
+            const task = () => {
+                objTimer.setNumber(timerCount)
+                if (--timerCount < 0) {
+                    clearInterval(timerId)
+                }
+            }
+            task()
+            timerId = setInterval(task, 1000)
+        }
+        this.socketOn('reversi_timer', setTimer)
+        const isMyself = (victim) => player.id.startsWith(victim.id)
+
+        const setDrawer = (drawerPointer) => {
+            drawer = this.players[drawerPointer]
+            if (isMyself(drawer)) {
+                drawCount = 0
+                objTextState.text = `あなたの番です`
+                objTextState.setFontSize(28)
+                isMyTurn = true
+            } else {
+                objTextState.text = `${drawer.name} の番です`
+                objTextState.setFontSize(16)
+                isMyTurn = false
+                const {x, y} = pos
+                field[y][x].object.setTexture('background')
+            }
+        }
+        this.socketOn('reversi_drawer', setDrawer)
+
+        this.socketOnce('reversi_mycolor', (color) => {
+            MY_COLOR = color
+            createText(this, WIDTH / 2, 65, 'あなた', {fontSize: 16})
+            this.add.rectangle(WIDTH / 2, 95, 44, 44, COLOR_REVERSI_BACK)
+                .setStrokeStyle(3, 0x000000)
+                .setOrigin(0.5, 0)
+            this.add.image(WIDTH / 2, 117, color === BLACK ? 'black' : 'white')
+                .setOrigin(0.5)
+                .setScale(0.3)
+        })
+
+        this.socketEmit('ready')
     }
 }
