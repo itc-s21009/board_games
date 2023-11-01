@@ -92,6 +92,22 @@ class BoardGameReversi extends BoardGame {
             if (change) {
                 drawerPointer = (++drawerPointer) % this.room.players.length
             }
+            const color = colors[this.room.players[drawerPointer].id]
+            const possibleCells = []
+            for (let y = 0; y < 8; y++) {
+                for (let x = 0; x < 8; x++) {
+                    const changes = getChanges(x, y, color)
+                    if (changes.length > 0) {
+                        possibleCells.push({x, y})
+                    }
+                }
+            }
+            if (possibleCells.length <= 0) {
+                drawerPointer = (++drawerPointer) % this.room.players.length
+                io.to(this.room.id).emit('reversi_pass')
+                setTimer(40)
+                return
+            }
             io.to(this.room.id).emit('reversi_drawer', drawerPointer)
             drawer = this.room.players[drawerPointer]
             setTimer(40)
@@ -109,11 +125,11 @@ class BoardGameReversi extends BoardGame {
             socket.on('reversi_place', ({x, y}) => {
                 const changes = getChanges(x, y, color)
                 if (changes.length > 0) {
-                    changeDrawer(true)
                     setCell(x, y, color)
                     changes.forEach(({x, y}) => {
                         setCell(x, y, color)
                     })
+                    changeDrawer(true)
                     const oppositeColor = color === BLACK ? WHITE : BLACK
                     let myStones = 0
                     let oppositeStones = 0
@@ -126,10 +142,10 @@ class BoardGameReversi extends BoardGame {
                             }
                         }
                     }
+                    this.setScore(player, myStones)
+                    this.setScore(oppositePlayer, oppositeStones)
                     if (oppositeStones === 0) {
                         clearInterval(timerId)
-                        this.setScore(player, myStones)
-                        this.setScore(oppositePlayer, oppositeStones)
                         this.handleEnd()
                     }
                 }

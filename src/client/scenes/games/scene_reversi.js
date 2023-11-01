@@ -166,6 +166,7 @@ export class SceneReversi extends BoardGameScene {
                 .setScale(0.3)
         })
         this.socketOn('reversi_set', ({x, y}, color) => {
+            pos = null
             setCell(x, y, color)
         })
         this.socketOn('reversi_pass', () => {
