@@ -1,7 +1,13 @@
 import {BoardGameScene} from "../board_game_scene";
-import {SCENE_REVERSI, WIDTH} from "../scene_loader";
-import {createButton, createCircleNumber, createText, drawBackground, drawWindow} from "../../components";
-import {BG_IN_GAME, COLOR_GAME_SECOND, COLOR_REVERSI_BACK, COLOR_TEXT_PRIMARY} from "../../game";
+import {SCENE_REVERSI, SCENE_TITLE, WIDTH} from "../scene_loader";
+import {createButton, createCircleNumber, createText, drawBackground, drawBlur, drawWindow} from "../../components";
+import {
+    BG_IN_GAME,
+    COLOR_DIVIDER,
+    COLOR_GAME_FIRST,
+    COLOR_GAME_SECOND, COLOR_GAME_THIRD,
+    COLOR_REVERSI_BACK
+} from "../../game";
 
 export class SceneReversi extends BoardGameScene {
     constructor() {
@@ -174,5 +180,37 @@ export class SceneReversi extends BoardGameScene {
         })
 
         this.socketEmit('ready')
+
+        this.socketOnce('game_end', (scoreboard) => {
+            clearInterval(timerId)
+            let placement = 0
+            for (let i = 0; i < scoreboard.length; i++) {
+                const score = scoreboard[i]
+                if (isMyself(score)) {
+                    placement = i+1
+                    break
+                }
+            }
+            drawBlur(this)
+            drawWindow(this, WIDTH / 2, 144, 285, 393, COLOR_GAME_FIRST)
+            createText(this, WIDTH / 2, 164, `ゲーム終了\n順位：${placement}位`)
+
+            scoreboard.forEach((scoreData, i) => {
+                const offsetY = i*48
+                createCircleNumber(this, 87, 268 + offsetY, 20, COLOR_GAME_SECOND, i+1)
+                this.add.rectangle(120, 248 + offsetY, 187, 38, COLOR_GAME_SECOND)
+                    .setStrokeStyle(1, COLOR_DIVIDER)
+                    .setOrigin(0)
+                createText(this, 120 + 10, 258 + offsetY, scoreData.name, {fontSize: 16})
+                    .setOrigin(0)
+                createCircleNumber(this, 287, 268 + offsetY, 15, COLOR_GAME_THIRD, scoreData.score, 0xFFFF00)
+            })
+
+            const objBtnBack = createButton(this, WIDTH / 2, 466, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})
+            objBtnBack.setOnClick(() => {
+                this.moveTo(SCENE_TITLE)
+                this.clearHistory()
+            })
+        })
     }
 }
