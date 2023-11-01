@@ -144,7 +144,7 @@ class BoardGameReversi extends BoardGame {
                     }
                     this.setScore(player, myStones)
                     this.setScore(oppositePlayer, oppositeStones)
-                    if (oppositeStones === 0) {
+                    if (oppositeStones === 0 || myStones + oppositeStones === 64) {
                         clearInterval(timerId)
                         this.handleEnd()
                     }
