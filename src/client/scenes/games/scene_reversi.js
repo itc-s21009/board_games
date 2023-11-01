@@ -73,6 +73,12 @@ export class SceneReversi extends BoardGameScene {
             objImg.on('pointerout', () => {
                 if (field[y][x].type === NONE && isMyTurn) {
                     objImg.setTexture('background')
+                    pos = null
+                }
+            })
+            objImg.on('pointerup', () => {
+                if (field[y][x].type === NONE && isMyTurn) {
+                    this.socketEmit('reversi_place', {x: x, y: y})
                 }
             })
         }
@@ -94,10 +100,10 @@ export class SceneReversi extends BoardGameScene {
                 setCell(x, y, NONE)
             }
         }
-        setCell(3, 3, BLACK)
-        setCell(3, 4, WHITE)
-        setCell(4, 3, WHITE)
-        setCell(4, 4, BLACK)
+        setCell(3, 3, WHITE)
+        setCell(3, 4, BLACK)
+        setCell(4, 3, BLACK)
+        setCell(4, 4, WHITE)
 
         let timerCount
         let timerId
@@ -129,8 +135,10 @@ export class SceneReversi extends BoardGameScene {
                 objTextState.text = `${drawer.name} の番です`
                 objTextState.setFontSize(16)
                 isMyTurn = false
-                const {x, y} = pos
-                field[y][x].object.setTexture('background')
+                if (pos) {
+                    const {x, y} = pos
+                    field[y][x].object.setTexture('background')
+                }
             }
         }
         this.socketOn('reversi_drawer', setDrawer)
@@ -144,6 +152,9 @@ export class SceneReversi extends BoardGameScene {
             this.add.image(WIDTH / 2, 117, color === BLACK ? 'black' : 'white')
                 .setOrigin(0.5)
                 .setScale(0.3)
+        })
+        this.socketOn('reversi_set', ({x, y}, color) => {
+            setCell(x, y, color)
         })
 
         this.socketEmit('ready')
