@@ -1,6 +1,6 @@
 import {BoardGameScene} from "../board_game_scene";
 import {SCENE_REVERSI, WIDTH} from "../scene_loader";
-import {createCircleNumber, createText, drawBackground} from "../../components";
+import {createButton, createCircleNumber, createText, drawBackground, drawWindow} from "../../components";
 import {BG_IN_GAME, COLOR_GAME_SECOND, COLOR_REVERSI_BACK, COLOR_TEXT_PRIMARY} from "../../game";
 
 export class SceneReversi extends BoardGameScene {
@@ -23,6 +23,11 @@ export class SceneReversi extends BoardGameScene {
         drawBackground(this, BG_IN_GAME)
         const objTextState = createText(this, WIDTH / 2, 24, '', {fontSize: 16})
         const objTimer = createCircleNumber(this, 320 + 50/2, 5 + 25/2 + 25/2, 25, COLOR_GAME_SECOND, 0)
+        const objBtnPass = createButton(this, WIDTH / 2, 545, 154, 83, COLOR_GAME_SECOND, 'パス！', {fontSize: 36})
+        objBtnPass.setVisible(false)
+        objBtnPass.setOnClick(() => {
+            this.socketEmit('reversi_pass')
+        })
 
         // フィールドを表現する多次元配列になる
         // {type: type, object: objImg}
@@ -140,6 +145,7 @@ export class SceneReversi extends BoardGameScene {
                     field[y][x].object.setTexture('background')
                 }
             }
+            objBtnPass.setVisible(isMyTurn)
         }
         this.socketOn('reversi_drawer', setDrawer)
 
@@ -155,6 +161,16 @@ export class SceneReversi extends BoardGameScene {
         })
         this.socketOn('reversi_set', ({x, y}, color) => {
             setCell(x, y, color)
+        })
+        this.socketOn('reversi_pass', () => {
+            const objFieldCover = this.add.rectangle(WIDTH / 2, 150, 360, 362, 0x0000FF, 0)
+                .setOrigin(0.5, 0)
+            objFieldCover.setInteractive()
+            const objWindow = drawWindow(this, WIDTH / 2, 270, 130, 80, COLOR_GAME_SECOND)
+            const objTextPass = createText(this, WIDTH / 2, 300, 'パス')
+            setTimeout(() => {
+                [objFieldCover, objWindow, objTextPass].forEach((obj) => obj.destroy())
+            }, 800)
         })
 
         this.socketEmit('ready')

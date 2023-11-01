@@ -101,6 +101,12 @@ class BoardGameReversi extends BoardGame {
                     })
                 }
             })
+            socket.on('reversi_pass', () => {
+                if (this.room.players[drawerPointer].id === player.id) {
+                    io.to(this.room.id).emit('reversi_pass')
+                    changeDrawer(true)
+                }
+            })
         })
         for (let y = 0; y < 8; y++) {
             // y行を[]で埋める
