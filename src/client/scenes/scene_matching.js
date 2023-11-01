@@ -1,9 +1,9 @@
-import {HEIGHT, SCENE_MATCHING, SCENE_SINKEI, WIDTH} from "./scene_loader";
+import {HEIGHT, SCENE_MATCHING, SCENE_REVERSI, SCENE_SINKEI, WIDTH} from "./scene_loader";
 import {createButton, createText, drawBackground, drawBlur, drawGameDetail, drawWindow} from "../components";
 import {
     COLOR_DIVIDER, COLOR_FIRST,
     COLOR_FOURTH,
-    COLOR_SECOND, COLOR_THIRD, GAME_SINKEI,
+    COLOR_SECOND, COLOR_THIRD, GAME_REVERSI, GAME_SINKEI,
     MODE_FRIEND_MATCH,
     socket
 } from "../game";
@@ -89,6 +89,9 @@ export class SceneMatching extends BoardGameScene {
                 switch (this.gameData.id) {
                     case GAME_SINKEI.id:
                         this.moveTo(SCENE_SINKEI, {players: players})
+                        break
+                    case GAME_REVERSI.id:
+                        this.moveTo(SCENE_REVERSI, {players: players})
                         break
                     default:
                         break

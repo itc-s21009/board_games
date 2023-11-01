@@ -8,6 +8,7 @@ import {SceneFriendMatch} from "./scenes/scene_friend_match";
 import {SceneRanking} from "./scenes/scene_ranking";
 import {SceneSinkei} from "./scenes/games/scene_sinkei";
 import {SceneLoading} from "./scenes/scene_loading";
+import {SceneReversi} from "./scenes/games/scene_reversi";
 
 export const COLOR_FIRST = 0x45eba5
 export const COLOR_SECOND = 0x21aba5
@@ -22,6 +23,8 @@ export const COLOR_GAME_FIRST = 0xFFD6B6
 export const COLOR_GAME_SECOND = 0xEA7362
 export const COLOR_GAME_THIRD = 0xB74242
 export const COLOR_GAME_FOURTH = 0x5C2626
+
+export const COLOR_REVERSI_BACK = 0x1F7520
 
 export const BG_MENU = 0
 export const BG_IN_GAME = 1
@@ -80,7 +83,7 @@ const config = {
     type: Phaser.AUTO,
     width: WIDTH,
     height: HEIGHT,
-    scene: [SceneLoading, SceneTitle, SceneSelectMode, SceneSelectGame, SceneMatching, SceneSearchRoom, SceneFriendMatch, SceneRanking, SceneSinkei],
+    scene: [SceneLoading, SceneTitle, SceneSelectMode, SceneSelectGame, SceneMatching, SceneSearchRoom, SceneFriendMatch, SceneRanking, SceneSinkei, SceneReversi],
 }
 
 const game = new Phaser.Game(config)

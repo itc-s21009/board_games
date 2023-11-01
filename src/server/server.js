@@ -55,6 +55,7 @@ const queues = {}
 const sockets = []
 
 const BoardGameSinkei = require('./games/sinkei')
+const BoardGameReversi = require('./games/reversi')
 
 const generateRoomId = () => {
     let roomId;
@@ -127,6 +128,9 @@ const startGame = (roomId) => {
         switch(room.gameData.id) {
             case 'sinkei':
                 new BoardGameSinkei(room).start()
+                return true
+            case 'reversi':
+                new BoardGameReversi(room).start()
                 return true
             default:
                 return false
