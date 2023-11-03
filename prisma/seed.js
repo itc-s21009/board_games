@@ -2,11 +2,12 @@ const {PrismaClient} = require('@prisma/client')
 const prisma = new PrismaClient()
 
 const main = async () => {
+    await prisma.game.deleteMany()
     await prisma.game.createMany({
         data: [
             {name: 'sinkei'},
             {name: 'speed'},
-            {name: 'osero'},
+            {name: 'reversi'},
             {name: 'daifugo'},
         ]
     })

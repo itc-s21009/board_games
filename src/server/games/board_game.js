@@ -49,7 +49,7 @@ class BoardGame {
         }
     }
 
-    storeResultsToDatabase(gameName) {
+    async storeResultsToDatabase(gameName) {
         const userData = {}
         const userColumnNames = ['user1', 'user2', 'user3', 'user4']
         const scoreColumnNames = ['score1', 'score2', 'score3', 'score4']
@@ -66,7 +66,7 @@ class BoardGame {
                 userData[scoreColumnName] = this.getScore(player)
             }
         }
-        prisma.matchResult.create({
+        await prisma.matchResult.create({
             data: {
                 game: {
                     connect: {

@@ -118,6 +118,7 @@ class BoardGameReversi extends BoardGame {
             io.to(this.room.id).emit('reversi_set', {x, y}, color)
         }
         this.room.players.forEach((player) => {
+            this.setScore(player, 2) // 最初は2枚ずつ
             const socket = this.server.getSocket(player)
             const color = colors[player.id]
             const oppositePlayer = this.room.players.filter((p) => p.id !== player.id)[0]
