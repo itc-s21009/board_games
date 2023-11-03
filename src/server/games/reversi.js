@@ -1,7 +1,7 @@
 const BoardGame = require('./board_game')
 class BoardGameReversi extends BoardGame {
-    constructor(room) {
-        super(room);
+    constructor(room, isRated) {
+        super(room, isRated);
     }
 
     start() {

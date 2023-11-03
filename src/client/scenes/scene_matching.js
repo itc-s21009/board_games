@@ -47,7 +47,7 @@ export class SceneMatching extends BoardGameScene {
             if (this.mode === MODE_FRIEND_MATCH) {
                 socket.emit('leave_room', this.roomId)
             } else {
-                socket.emit('leave_normal', this.gameData)
+                socket.emit('leave_queue')
             }
             this.backToPrevScene()
         })

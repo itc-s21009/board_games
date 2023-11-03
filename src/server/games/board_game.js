@@ -2,9 +2,10 @@ const {PrismaClient} = require('@prisma/client')
 const prisma = new PrismaClient()
 
 class BoardGame {
-    constructor(room) {
+    constructor(room, isRated) {
         this.server = require("../server")
         this.room = room
+        this.isRated = isRated
         this.playersJoined = [...room.players]
         this.scores = {}
         this.duration = 0

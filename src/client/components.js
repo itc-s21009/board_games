@@ -82,7 +82,7 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
                 })
                 return
             }
-            socket.emit('join_normal', gameData, (success, playerCount) => {
+            socket.emit('join_queue', gameData, mode, (success, playerCount) => {
                 if (success) {
                     scene.moveTo(SCENE_MATCHING, {gameData: gameData, mode: mode, initialPlayerCount: playerCount})
                 } else {

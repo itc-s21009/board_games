@@ -53,8 +53,12 @@ const queues = {}
 // {socket: socket, player: {id: playerId, name: playerName}}
 const sockets = []
 
+// {socket: socket, queue: queue}
+const socketQueueMap = {}
+
 const BoardGameSinkei = require('./games/sinkei')
 const BoardGameReversi = require('./games/reversi')
+const {MODE_NORMAL, MODE_RATING} = require("./modes");
 
 const generateRoomId = () => {
     let roomId;
@@ -78,6 +82,8 @@ const createPrivateRoom = (gameData) => {
 }
 
 const isQueue = (roomId) => roomId.toString().startsWith('queue')
+const isNormalQueue = (roomId) => roomId.toString().startsWith('queue_normal')
+const isRatedQueue = (roomId) => roomId.toString().startsWith('queue_rated')
 const isGameRoom = (roomId) => roomId.toString().startsWith('game')
 
 const joinRoom = (socket, roomId) => {
@@ -118,6 +124,7 @@ const startGame = (roomId) => {
     if (!room) {
         return false
     }
+    const isRated = isRatedQueue(roomId)
     let started = false
     const start = () => {
         if (started) {
@@ -126,10 +133,10 @@ const startGame = (roomId) => {
         started = true
         switch(room.gameData.id) {
             case 'sinkei':
-                new BoardGameSinkei(room).start()
+                new BoardGameSinkei(room, isRated).start()
                 return true
             case 'reversi':
-                new BoardGameReversi(room).start()
+                new BoardGameReversi(room, isRated).start()
                 return true
             default:
                 return false
@@ -232,22 +239,47 @@ const registerListeners = (socket) => {
         })
     })
 
-    socket.on('join_normal', (gameData, callback) => {
-        const queueId = `queue_normal_${gameData.id}`
+    socket.on('join_queue', async (gameData, mode, callback) => {
+        let queueId
+        if (mode === MODE_NORMAL) {
+            queueId = `queue_normal_${gameData.id}`
+        } else if (mode === MODE_RATING) {
+            await prisma.rating.findFirst({
+                where: {
+                    user: {
+                        sessionId: getPlayer(socket).id
+                    },
+                    game: {
+                        name: gameData.id
+                    }
+                }
+            }).then((ratingData) => {
+                const splitInterval = 300 // 300, 600, 900, 1200, 1500, ... のグループに分ける
+                const queueGroup = Math.floor(ratingData.rating / splitInterval) * splitInterval
+                queueId = `queue_rated_${gameData.id}_${queueGroup}`
+            })
+        } else {
+            callback(false)
+            return
+        }
         if (!queues[queueId]) {
             createRoom(queueId, gameData)
         }
         if (joinRoom(socket, queueId)) {
             const playerCount = queues[queueId].players.length
+            socketQueueMap[socket] = queueId
             callback(true, playerCount)
         } else {
             callback(false)
         }
     })
 
-    socket.on('leave_normal', (gameData) => {
-        const queueId = `queue_normal_${gameData.id}`
-        leaveRoom(socket, queueId)
+    socket.on('leave_queue', () => {
+        const queueId = socketQueueMap[socket]
+        if (queueId) {
+            delete socketQueueMap[socket]
+            leaveRoom(socket, queueId)
+        }
     })
 
     socket.on('create_room', (gameData, callback) => {
