@@ -23,8 +23,17 @@ router.post('/', async (req, res) => {
             sessionId: req.session.id,
             name: name
         }
-    }).then(() => {
-        return res.status(200).json({message: `名前を設定しました：${name}`})
+    }).then(async (user) => {
+        const games = await prisma.game.findMany()
+        const initialRatingData = games.map((game) => ({
+                userId: user.id,
+                rating: 1000,
+                gameId: game.id
+            }
+        ))
+        await prisma.rating.createMany({data: initialRatingData}).then(() => {
+            return res.status(200).json({message: `名前を設定しました：${name}`})
+        })
     })
 })
 

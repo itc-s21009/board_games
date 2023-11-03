@@ -35,7 +35,6 @@ app.get('/', (req, res) => {
 
 const nameRouter = require('./api/name')
 const sessionRouter = require('./api/session')
-const CARDS = require("../server/cards");
 
 app.use('/api/name', nameRouter)
 app.use('/api/session', sessionRouter)
