@@ -4,7 +4,7 @@ import {
     COLOR_DIVIDER, COLOR_FIRST,
     COLOR_FOURTH,
     COLOR_SECOND, COLOR_THIRD, GAME_REVERSI, GAME_SINKEI,
-    MODE_FRIEND_MATCH,
+    MODE_FRIEND_MATCH, MODE_RATING,
     socket
 } from "../game";
 import {BoardGameScene} from "./board_game_scene";
@@ -86,12 +86,16 @@ export class SceneMatching extends BoardGameScene {
             })
 
             this.socketOnce('match_go', () => {
+                const data = {
+                    players: players,
+                    isRated: this.mode === MODE_RATING
+                }
                 switch (this.gameData.id) {
                     case GAME_SINKEI.id:
-                        this.moveTo(SCENE_SINKEI, {players: players})
+                        this.moveTo(SCENE_SINKEI, data)
                         break
                     case GAME_REVERSI.id:
-                        this.moveTo(SCENE_REVERSI, {players: players})
+                        this.moveTo(SCENE_REVERSI, data)
                         break
                     default:
                         break

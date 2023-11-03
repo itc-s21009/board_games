@@ -118,13 +118,12 @@ const leaveRoom = (socket, roomId) => {
     return true
 }
 
-const startGame = (roomId) => {
+const startGame = (roomId, isRated) => {
     roomId = roomId.toString()
     const room = queues[roomId]
     if (!room) {
         return false
     }
-    const isRated = isRatedQueue(roomId)
     let started = false
     const start = () => {
         if (started) {
@@ -178,6 +177,7 @@ const dequeuePlayersAndGo = (roomId) => {
     if (!room) {
         return false
     }
+    const isRated = isRatedQueue(roomId)
     const playersToGo = room.players.splice(0, room.gameData.maxPlayers)
     // 切断を検出するために、このタイミングでのソケットを保管しておく
     const sockets = []
@@ -201,7 +201,7 @@ const dequeuePlayersAndGo = (roomId) => {
             console.log(`game room: ${roomId}`)
             playersToGo.forEach((p) => joinRoom(getSocket(p), roomId))
             io.to(roomId).emit('match_go')
-            startGame(roomId)
+            startGame(roomId, isRated)
         }
     }, 10000)
 }

@@ -17,6 +17,7 @@ export class SceneReversi extends BoardGameScene {
     init(data) {
         super.init(data)
         this.players = data.players
+        this.isRated = data.isRated
     }
 
     preload() {
@@ -192,19 +193,23 @@ export class SceneReversi extends BoardGameScene {
                     break
                 }
             }
+
+            const objects = []
             drawBlur(this)
-            drawWindow(this, WIDTH / 2, 144, 285, 393, COLOR_GAME_FIRST)
-            createText(this, WIDTH / 2, 164, `ゲーム終了\n順位：${placement}位`)
+            const objWindow = drawWindow(this, WIDTH / 2, 144, 285, !this.isRated ? 393 : 518, COLOR_GAME_FIRST)
+            const objTextPlacement = createText(this, WIDTH / 2, 164, `ゲーム終了\n順位：${placement}位`)
+            objects.push(objWindow, objTextPlacement)
 
             scoreboard.forEach((scoreData, i) => {
                 const offsetY = i*48
-                createCircleNumber(this, 87, 268 + offsetY, 20, COLOR_GAME_SECOND, i+1)
-                this.add.rectangle(120, 248 + offsetY, 187, 38, COLOR_GAME_SECOND)
+                const objCirclePlacement = createCircleNumber(this, 87, 268 + offsetY, 20, COLOR_GAME_SECOND, i+1)
+                const objRect = this.add.rectangle(120, 248 + offsetY, 187, 38, COLOR_GAME_SECOND)
                     .setStrokeStyle(1, COLOR_DIVIDER)
                     .setOrigin(0)
-                createText(this, 120 + 10, 258 + offsetY, scoreData.name, {fontSize: 16})
+                const objTextName = createText(this, 120 + 10, 258 + offsetY, scoreData.name, {fontSize: 16})
                     .setOrigin(0)
-                createCircleNumber(this, 287, 268 + offsetY, 15, COLOR_GAME_THIRD, scoreData.score, 0xFFFF00)
+                const objCircleScore = createCircleNumber(this, 287, 268 + offsetY, 15, COLOR_GAME_THIRD, scoreData.score, 0xFFFF00)
+                objects.push(objCirclePlacement, objRect, objTextName, objCircleScore)
             })
 
             const objBtnBack = createButton(this, WIDTH / 2, 466, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})
@@ -212,6 +217,19 @@ export class SceneReversi extends BoardGameScene {
                 this.moveTo(SCENE_TITLE)
                 this.clearHistory()
             })
+
+            if (this.isRated) {
+                objects.forEach((obj) => {
+                    obj.y -= 72
+                })
+                objBtnBack.y += 40
+                const myScore = scoreboard.find((scoreData) => this.getPlayer().id.startsWith(scoreData.id))
+                const rating = myScore.rating
+                const change = myScore.ratingChange
+                const changeStr = change >= 0 ? `+${change}` : change
+                createText(this, WIDTH / 2, 394, `レート変動\n${rating} => ${rating + change}\n(${changeStr})`)
+                    .setAlign('center')
+            }
         })
     }
 }

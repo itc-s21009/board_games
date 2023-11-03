@@ -130,10 +130,10 @@ class BoardGame {
                 const scoreData = scoreboard[i]
                 const change = Math.ceil(K * (S(i + 1) - E(ratingFirst, ratingLast)))
                 console.log(`${scoreData.name}: ${scoreData.rating} => ${scoreData.rating + change}`)
-                scoreData.rating += change
+                scoreData.ratingChange = change
                 await prisma.rating.updateMany({
                     data: {
-                        rating: scoreData.rating
+                        rating: scoreData.rating + change
                     },
                     where: {
                         user: {
