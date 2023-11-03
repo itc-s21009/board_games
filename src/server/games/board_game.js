@@ -114,21 +114,21 @@ class BoardGame {
                     scoreData.rating = ratingData.rating
                 })
             }
-            const K = 32
-            const E = (player, opponent) => 1 / (1 + 10 ** ((opponent - player) / 400))
-            const S = (rank) => {
+            const base = 32
+            const getMultiplier = (rank) => {
                 const S = [
-                    [1.0, 0.0],
-                    [1.0, 0.25, 0.0],
-                    [1.0, 0.75, 0.25, 0.0]
+                    [1.0, -1.0],
+                    [1.0, -0.5, -1.0],
+                    [1.0, 0.5, -0.5, -1.0]
                 ]
                 return S[this.playersJoined.length - 2][rank - 1]
             }
             const ratingFirst = scoreboard[0].rating
             const ratingLast = scoreboard[scoreboard.length - 1].rating
+            const changeBase = Math.ceil(base + (ratingLast - ratingFirst) * 0.04)
             for (let i = 0; i < scoreboard.length; i++) {
                 const scoreData = scoreboard[i]
-                const change = Math.ceil(K * (S(i + 1) - E(ratingFirst, ratingLast)))
+                const change = Math.ceil(changeBase * getMultiplier(i+1))
                 console.log(`${scoreData.name}: ${scoreData.rating} => ${scoreData.rating + change}`)
                 scoreData.ratingChange = change
                 await prisma.rating.updateMany({
