@@ -321,7 +321,7 @@ setInterval(() => {
             } else {
                 delete forceStartCount[queueId]
             }
-            if (queue.players.length >= maxPlayers || forceStartCount[queueId] > FORCESTART_THRESHOLD / QUEUE_INTERVAL) {
+            if ((queue.players.length >= maxPlayers && forceStartCount[queueId] >= 2) || forceStartCount[queueId] > FORCESTART_THRESHOLD / QUEUE_INTERVAL) {
                 delete forceStartCount[queueId]
                 dequeuePlayersAndGo(queueId)
             }
