@@ -17,6 +17,23 @@ class BoardGame {
             const socket = this.server.getSocket(player)
             socket.on('disconnecting', () => this.handleDisconnect(player))
         })
+
+        if (this.isRated) {
+            this.playersJoined.forEach(async (player) => {
+                await prisma.rating.findFirst({
+                    where: {
+                        user: {
+                            sessionId: player.id
+                        },
+                        game: {
+                            name: this.room.gameData.id
+                        }
+                    }
+                }).then((ratingData) => {
+                    player.rating = ratingData.rating
+                })
+            })
+        }
     }
 
     start() {}
@@ -50,7 +67,7 @@ class BoardGame {
         }
     }
 
-    async storeResultsToDatabase(gameName) {
+    async storeResultsToDatabase(gameName, scoreboard) {
         const userData = {}
         const userColumnNames = ['user1', 'user2', 'user3', 'user4']
         const scoreColumnNames = ['score1', 'score2', 'score3', 'score4']
@@ -74,27 +91,80 @@ class BoardGame {
                         name: gameName
                     }
                 },
-                isRated: false,
+                isRated: this.isRated,
                 duration: this.duration,
                 ...userData
             },
         })
+        if (this.isRated) {
+            for (let i = 0; i < scoreboard.length; i++) {
+                const scoreData = scoreboard[i]
+                await prisma.rating.findFirst({
+                    where: {
+                        user: {
+                            sessionId: {
+                                startsWith: scoreData.id
+                            }
+                        },
+                        game: {
+                            name: this.room.gameData.id
+                        }
+                    }
+                }).then((ratingData) => {
+                    scoreData.rating = ratingData.rating
+                })
+            }
+            const K = 32
+            const E = (player, opponent) => 1 / (1 + 10 ** ((opponent - player) / 400))
+            const S = (rank) => {
+                const S = [
+                    [1.0, 0.0],
+                    [1.0, 0.25, 0.0],
+                    [1.0, 0.75, 0.25, 0.0]
+                ]
+                return S[this.playersJoined.length - 2][rank - 1]
+            }
+            const ratingFirst = scoreboard[0].rating
+            const ratingLast = scoreboard[scoreboard.length - 1].rating
+            for (let i = 0; i < scoreboard.length; i++) {
+                const scoreData = scoreboard[i]
+                const change = Math.ceil(K * (S(i + 1) - E(ratingFirst, ratingLast)))
+                console.log(`${scoreData.name}: ${scoreData.rating} => ${scoreData.rating + change}`)
+                scoreData.rating += change
+                await prisma.rating.updateMany({
+                    data: {
+                        rating: scoreData.rating
+                    },
+                    where: {
+                        user: {
+                            sessionId: {
+                                startsWith: scoreData.id
+                            }
+                        },
+                        game: {
+                            name: this.room.gameData.id
+                        }
+                    }
+                })
+            }
+        }
     }
 
-    handleEnd() {
+    async handleEnd() {
         if (this.ended) {
             return
         }
         this.ended = true
         clearInterval(this.durationTimerId)
-        this.server.io.to(this.room.id).emit('game_end', this.createScoreboard())
+        const scoreboard = this.createScoreboard()
+        await this.storeResultsToDatabase(this.room.gameData.id, scoreboard)
+        this.server.io.to(this.room.id).emit('game_end', scoreboard)
         this.room.players.forEach((p) => {
             const socket = this.server.getSocket(p)
             socket.removeAllListeners()
             this.server.leaveRoom(socket, this.room.id)
             this.server.registerListeners(socket)
         })
-        this.storeResultsToDatabase(this.room.gameData.id)
     }
 
     handleDisconnect(player)  {
