@@ -1,6 +1,6 @@
 import {BoardGameScene} from "./board_game_scene";
 import {SCENE_RANKING, WIDTH} from "./scene_loader";
-import {createButton, createText, drawBackground} from "../components";
+import {createButton, createCircleNumber, createText, drawBackground} from "../components";
 import {COLOR_DIVIDER, COLOR_SECOND, COLOR_THIRD} from "../game";
 
 export class SceneRanking extends BoardGameScene {
@@ -23,14 +23,18 @@ export class SceneRanking extends BoardGameScene {
         createButton(this, 29 + 150/2, 104, 150, 50, COLOR_SECOND, '勝利数', {fontSize: 24})
         createButton(this, 193 + 150/2, 104, 150, 50, COLOR_SECOND, 'レート', {fontSize: 24})
 
-        this.add.rectangle(19 + 8/2, 217 + 344/2, 8, 344, COLOR_SECOND)
+        this.add.rectangle(19, 217, 8, 344, COLOR_SECOND)
             .setStrokeStyle(1, COLOR_DIVIDER)
-        this.add.rectangle(26 + 323/2, 217 + 8/2, 323, 8, COLOR_SECOND)
+            .setOrigin(0)
+        this.add.rectangle(26 ,217, 323, 8, COLOR_SECOND)
             .setStrokeStyle(1, COLOR_DIVIDER)
-        this.add.rectangle(26 + 323/2, 553 + 8/2, 323, 8, COLOR_SECOND)
+            .setOrigin(0)
+        this.add.rectangle(26, 553, 323, 8, COLOR_SECOND)
             .setStrokeStyle(1, COLOR_DIVIDER)
-        this.add.rectangle(26 + 323/2, 224 + 330/2, 323, 330, COLOR_THIRD)
+            .setOrigin(0)
+        this.add.rectangle(26, 224, 323, 330, COLOR_THIRD)
             .setStrokeStyle(1, COLOR_DIVIDER)
+            .setOrigin(0)
 
         const objBtnPrev = createButton(this, 82 + 39/2, 170, 39, 37, COLOR_SECOND, 'left', {isSvg: true})
         const objBtnNext = createButton(this, 248 + 39/2, 170, 39, 37, COLOR_SECOND, 'right', {isSvg: true})
@@ -55,5 +59,33 @@ export class SceneRanking extends BoardGameScene {
         objBtnBack.setOnClick(() => {
             this.backToPrevScene()
         })
+
+        const topColors = [0xE4FF41, 0xAFAFAF, 0xCC6200]
+        for (let i = 0; i < 6; i++) {
+            const placement = i + 1
+            const offsetY = i * 55
+            if (placement <= 3) {
+                const color = topColors[i]
+                const objCirclePlacement = createCircleNumber(this, 60, 252 + offsetY, 20, color, placement)
+                objCirclePlacement.setFontSize(32)
+                const objGraphicsPlayer = this.add.graphics()
+                objGraphicsPlayer.fillGradientStyle(color, color, color, color)
+                objGraphicsPlayer.fillRect(90, 232 + offsetY, 205, 40)
+            } else {
+                const objCirclePlacement = createCircleNumber(this, 60, 252 + offsetY, 20, COLOR_SECOND, placement)
+                objCirclePlacement.setFontSize(32)
+                const objGraphicsPlayer = this.add.graphics()
+                objGraphicsPlayer.fillGradientStyle(COLOR_SECOND, COLOR_SECOND, COLOR_SECOND, COLOR_SECOND)
+                objGraphicsPlayer.fillRect(90, 232 + offsetY, 205, 40)
+            }
+            const objTextPlayer = createText(this, 95, 242 + offsetY, `player${placement}`, {fontSize: 16})
+            objTextPlayer.setOrigin(0)
+            const objGraphicsScore = this.add.graphics()
+            objGraphicsScore.fillStyle(COLOR_THIRD)
+            objGraphicsScore.fillRoundedRect(220, 235 + offsetY, 70, 34, 10)
+            const objTextScore = createText(this, 255, 242 + offsetY, '5000', {color: 0xE4FF41, fontSize: 20})
+            const objDivider = this.add.line(26, 279 + offsetY, 0, 0, 279, 0, COLOR_DIVIDER)
+            objDivider.setOrigin(0)
+        }
     }
 }
