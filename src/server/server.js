@@ -324,6 +324,69 @@ const registerListeners = (socket) => {
         }
         sockets.splice(socketDataIndex, 1)
     })
+
+    socket.on('get_leaderboard', async ({type, gameName, isRated=false}, callback) => {
+        switch (type) {
+            case 'wins':
+                await prisma.stat.findMany({
+                    where: {
+                        game: {
+                            name: gameName
+                        },
+                        isRated: isRated
+                    },
+                    select: {
+                        user: {
+                            select: {
+                                name: true
+                            }
+                        },
+                        wins: true
+                    },
+                    orderBy: [
+                        {
+                            wins: 'desc'
+                        }
+                    ]
+                }).then((data) => {
+                    data = data.map((d) => ({name: d.user.name, score: d.wins}))
+                    console.log(data)
+                    callback(data)
+                })
+                break
+            case 'rating':
+                await prisma.rating.findMany({
+                    where: {
+                        game: {
+                            name: gameName
+                        },
+                        rating: {
+                            gt: 1000
+                        }
+                    },
+                    select: {
+                        user: {
+                            select: {
+                                name: true
+                            }
+                        },
+                        rating: true
+                    },
+                    orderBy: [
+                        {
+                            rating: 'desc'
+                        }
+                    ]
+                }).then((data) => {
+                    data = data.map((d) => ({name: d.user.name, score: d.rating}))
+                    callback(data)
+                })
+                break
+            default:
+                callback([])
+                break
+        }
+    })
 }
 
 io.on('connection', registerListeners)
