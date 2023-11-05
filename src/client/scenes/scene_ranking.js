@@ -60,10 +60,16 @@ export class SceneRanking extends BoardGameScene {
             this.backToPrevScene()
         })
 
-        const topColors = [0xE4FF41, 0xAFAFAF, 0xCC6200]
+        let gamePointer = 0
+        const games = [
+            GAME_SPEED,
+            GAME_SINKEI,
+            GAME_DAIFUGO,
+            GAME_REVERSI
+        ]
         const reqData = {
             type: 'wins',
-            gameName: 'sinkei'
+            gameName: games[0].id
         }
         const leaderboardObjects = []
         const displayData = (leaderboard) => {
@@ -117,13 +123,6 @@ export class SceneRanking extends BoardGameScene {
                 fetchData(reqData)
             }
         }
-        let gamePointer = 0
-        const games = [
-            GAME_SPEED,
-            GAME_SINKEI,
-            GAME_DAIFUGO,
-            GAME_REVERSI
-        ]
         const setGame = (pointer) => {
             if (pointer < 0) {
                 pointer = games.length - 1
@@ -140,10 +139,18 @@ export class SceneRanking extends BoardGameScene {
         }
 
         objBtnWins.setOnClick(() => {
-            setType('wins')
+            if (!objBtnWins.isPressed()) {
+                objBtnWins.setPressed(true)
+                objBtnRating.setPressed(false)
+                setType('wins')
+            }
         })
         objBtnRating.setOnClick(() => {
-            setType('rating')
+            if (!objBtnRating.isPressed()) {
+                objBtnRating.setPressed(true)
+                objBtnWins.setPressed(false)
+                setType('rating')
+            }
         })
         objBtnNext.setOnClick(() => {
             setGame(++gamePointer)
@@ -151,5 +158,8 @@ export class SceneRanking extends BoardGameScene {
         objBtnPrev.setOnClick(() => {
             setGame(--gamePointer)
         })
+
+        objBtnWins.setPressed(true)
+        setGame(0)
     }
 }

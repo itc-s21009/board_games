@@ -2,7 +2,7 @@ import {
     BG_IN_GAME,
     BG_MENU, COLOR_DIVIDER,
     COLOR_FIRST,
-    COLOR_GAME_FIRST, COLOR_SECOND, COLOR_TEXT_PRIMARY, COLOR_TEXT_WHITE, MODE_FRIEND_MATCH, socket
+    COLOR_GAME_FIRST, COLOR_SECOND, COLOR_TEXT_PRIMARY, COLOR_TEXT_WHITE, COLOR_THIRD, MODE_FRIEND_MATCH, socket
 } from "./game";
 import {HEIGHT, SCENE_MATCHING, WIDTH} from "./scenes/scene_loader";
 
@@ -119,8 +119,9 @@ export const createButton = (scene, x, y, width, height, color, textOrSvgPath, {
     const objRect = scene.add.rectangle(0, 0, width, height, color)
     objRect.setStrokeStyle(1, 0xBDBDBD)
     const container = scene.add.container(x, y)
+    let objRectShadow
     if (!withoutShadow) {
-        const objRectShadow = scene.add.rectangle(5, 5, width, height, 0x000000)
+        objRectShadow = scene.add.rectangle(5, 5, width, height, 0x000000)
         container.add(objRectShadow)
     }
     const createTextOrIcon = () => {
@@ -136,23 +137,56 @@ export const createButton = (scene, x, y, width, height, color, textOrSvgPath, {
     container.add([objRect, objTextOrIcon])
     container.setSize(width, height)
     container.setInteractive()
-    container.on('pointerover', () => {
-        objRect.setFillStyle(0x1D566E)
-        if (isSvg) {
-            objTextOrIcon.setTintFill(COLOR_TEXT_WHITE)
+    const setReversedColor = (reversed) => {
+        if (reversed) {
+            objRect.setFillStyle(COLOR_THIRD)
+            if (isSvg) {
+                objTextOrIcon.setTintFill(COLOR_TEXT_WHITE)
+            } else {
+                objTextOrIcon.setColor(hexToStr(COLOR_TEXT_WHITE))
+            }
         } else {
-            objTextOrIcon.setColor(hexToStr(COLOR_TEXT_WHITE))
+            objRect.setFillStyle(color)
+            if (isSvg) {
+                objTextOrIcon.setTintFill(COLOR_TEXT_PRIMARY)
+            } else {
+                objTextOrIcon.setColor(hexToStr(COLOR_TEXT_PRIMARY))
+            }
         }
+    }
+    container.on('pointerover', () => {
+        setReversedColor(true)
     })
     container.on('pointerout', () => {
-        objRect.setFillStyle(color)
-        if (isSvg) {
-            objTextOrIcon.setTintFill(COLOR_TEXT_PRIMARY)
-        } else {
-            objTextOrIcon.setColor(hexToStr(COLOR_TEXT_PRIMARY))
+        if (isPressed) {
+            return
         }
+        setReversedColor(false)
     })
+    let isPressed = false
     container.setOnClick = (handleClick) => container.on('pointerup', handleClick)
+    container.isPressed = () => isPressed
+    container.setPressed = (flag) => {
+        isPressed = flag
+        if (isPressed) {
+            setReversedColor(true)
+            if (!withoutShadow) {
+                objRect.x = 5
+                objRect.y = 5
+                objTextOrIcon.x = 5
+                objTextOrIcon.y = 5
+            }
+        } else {
+            setReversedColor(false)
+            if (!withoutShadow) {
+                objRect.x = 0
+                objRect.y = 0
+                objTextOrIcon.x = 0
+                objTextOrIcon.x = 0
+                objTextOrIcon.y = 0
+            }
+        }
+    }
     return container
 }
 
