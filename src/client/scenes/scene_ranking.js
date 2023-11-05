@@ -146,7 +146,9 @@ export class SceneRanking extends BoardGameScene {
             }
             const reqDataKey = reqDataToKey(reqData)
             const cache = cacheLeaderboard[reqDataKey]
-            if (pointer > cache.length - 6) {
+            if (cache.length <= 6) {
+                pointer = 0
+            } else if (pointer > cache.length - 6) {
                 pointer = cache.length - 6
             }
             leaderboardPointer = pointer
