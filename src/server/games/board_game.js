@@ -96,7 +96,71 @@ class BoardGame {
                 ...userData
             },
         })
-        if (this.isRated) {
+        const isDraw = scoreboard.filter((scoreData) => scoreData.score === scoreboard[0].score).length === scoreboard.length
+        if (isDraw) {
+            for (const player of scoreboard) {
+                await prisma.stat.updateMany({
+                    where: {
+                        user: {
+                            sessionId: {
+                                startsWith: player.id
+                            }
+                        },
+                        game: {
+                            name: gameName
+                        },
+                        isRated: this.isRated
+                    },
+                    data: {
+                        draws: {
+                            increment: 1
+                        }
+                    }
+                })
+            }
+        } else {
+            const winner = scoreboard[0]
+            const losers = scoreboard.slice(1)
+            await prisma.stat.updateMany({
+                where: {
+                    user: {
+                        sessionId: {
+                            startsWith: winner.id
+                        }
+                    },
+                    game: {
+                        name: gameName
+                    },
+                    isRated: this.isRated
+                },
+                data: {
+                    wins: {
+                        increment: 1
+                    }
+                }
+            })
+            for (const loser of losers) {
+                await prisma.stat.updateMany({
+                    where: {
+                        user: {
+                            sessionId: {
+                                startsWith: loser.id
+                            }
+                        },
+                        game: {
+                            name: gameName
+                        },
+                        isRated: this.isRated
+                    },
+                    data: {
+                        losses: {
+                            increment: 1
+                        }
+                    }
+                })
+            }
+        }
+        if (this.isRated && !isDraw) {
             for (let i = 0; i < scoreboard.length; i++) {
                 const scoreData = scoreboard[i]
                 await prisma.rating.findFirst({

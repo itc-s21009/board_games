@@ -31,6 +31,21 @@ router.post('/', async (req, res) => {
                 gameId: game.id
             }
         ))
+        const initialStatData = games.map((game) => (
+            [
+                {
+                    userId: user.id,
+                    gameId: game.id,
+                    isRated: true
+                },
+                {
+                    userId: user.id,
+                    gameId: game.id,
+                    isRated: false
+                }
+            ]
+        )).flat()
+        await prisma.stat.createMany({data: initialStatData})
         await prisma.rating.createMany({data: initialRatingData}).then(() => {
             return res.status(200).json({message: `名前を設定しました：${name}`})
         })
