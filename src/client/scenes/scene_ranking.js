@@ -132,10 +132,12 @@ export class SceneRanking extends BoardGameScene {
             const game = games[gamePointer]
             reqData.gameName = game.id
             objTextGame.text = game.title
+            leaderboardPointer = 0
             refreshData(reqData)
         }
         const setType = (type) => {
             reqData.type = type
+            leaderboardPointer = 0
             refreshData(reqData)
         }
         const setStartPoint = (pointer) => {
