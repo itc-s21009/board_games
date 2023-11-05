@@ -72,14 +72,15 @@ export class SceneRanking extends BoardGameScene {
             gameName: games[0].id
         }
         const leaderboardObjects = []
+        let leaderboardPointer = 0
         const displayData = (leaderboard) => {
             leaderboardObjects.splice(0).forEach((obj) => obj.destroy())
             const topColors = [0xE4FF41, 0xAFAFAF, 0xCC6200]
-            leaderboard.forEach((data, i) => {
-                const placement = i + 1
+            leaderboard.slice(leaderboardPointer, leaderboardPointer + 6).forEach((data, i) => {
+                const placement = i + 1 + leaderboardPointer
                 const offsetY = i * 55
                 if (placement <= 3) {
-                    const color = topColors[i]
+                    const color = topColors[placement-1]
                     const objCirclePlacement = createCircleNumber(this, 60, 252 + offsetY, 20, color, placement)
                     objCirclePlacement.setFontSize(32)
                     const objGraphicsPlayer = this.add.graphics()
@@ -137,6 +138,18 @@ export class SceneRanking extends BoardGameScene {
             reqData.type = type
             refreshData(reqData)
         }
+        const setStartPoint = (pointer) => {
+            if (pointer < 0) {
+                pointer = 0
+            }
+            const reqDataKey = reqDataToKey(reqData)
+            const cache = cacheLeaderboard[reqDataKey]
+            if (pointer > cache.length - 6) {
+                pointer = cache.length - 6
+            }
+            leaderboardPointer = pointer
+            refreshData(reqData)
+        }
 
         objBtnWins.setOnClick(() => {
             if (!objBtnWins.isPressed()) {
@@ -157,6 +170,20 @@ export class SceneRanking extends BoardGameScene {
         })
         objBtnPrev.setOnClick(() => {
             setGame(--gamePointer)
+        })
+        objBtnUp.setOnClick(() => {
+            setStartPoint(--leaderboardPointer)
+        })
+        objBtnDown.setOnClick(() => {
+            setStartPoint(++leaderboardPointer)
+        })
+        objBtnFirst.setOnClick(() => {
+            setStartPoint(0)
+        })
+        objBtnLast.setOnClick(() => {
+            const reqDataKey = reqDataToKey(reqData)
+            const cache = cacheLeaderboard[reqDataKey]
+            setStartPoint(cache.length - 6)
         })
 
         objBtnWins.setPressed(true)
