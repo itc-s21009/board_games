@@ -159,7 +159,8 @@ export const createButton = (scene, x, y, width, height, color, textOrSvgPath, {
 export const createCircleNumber = (scene, x, y, radius, color, num, textColor=COLOR_TEXT_PRIMARY) => {
     const objCircle = scene.add.circle(0, 0, radius, color)
     objCircle.setStrokeStyle(1, COLOR_DIVIDER)
-    const objTextNumber = createText(scene, 0, -(radius/2), num.toString(), {color: textColor})
+    const objTextNumber = createText(scene, 0, 0, num.toString(), {color: textColor})
+    objTextNumber.setOrigin(0.5)
     const container = scene.add.container(x, y, [objCircle, objTextNumber])
     container.setNumber = (n) => {
         objTextNumber.text = n.toString()
