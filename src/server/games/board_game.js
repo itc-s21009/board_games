@@ -160,7 +160,7 @@ class BoardGame {
                 })
             }
         }
-        if (this.isRated && !isDraw) {
+        if (this.isRated) {
             for (let i = 0; i < scoreboard.length; i++) {
                 const scoreData = scoreboard[i]
                 await prisma.rating.findFirst({
@@ -178,38 +178,60 @@ class BoardGame {
                     scoreData.rating = ratingData.rating
                 })
             }
+            if (isDraw) {
+                scoreboard.forEach((scoreData) => scoreData.ratingChange = 0)
+                return
+            }
             const base = 32
+            // 同順位をまとめる [ scoreData[] ]
+            const groupedScore = []
             const getMultiplier = (rank) => {
                 const S = [
+                    [0.0],
                     [1.0, -1.0],
                     [1.0, -0.5, -1.0],
                     [1.0, 0.5, -0.5, -1.0]
                 ]
-                return S[this.playersJoined.length - 2][rank - 1]
+                return S[Object.keys(groupedScore).length - 1][rank - 1]
             }
+            for (let i = 0, placement = 0; i < scoreboard.length; i++) {
+                const scoreData = scoreboard[i]
+                const score = scoreData.score
+                if (!groupedScore[placement]) {
+                    groupedScore[placement] = []
+                } else if (groupedScore[placement][0].score !== score) {
+                    placement++
+                    groupedScore[placement] = []
+                }
+                groupedScore[placement].push(scoreData)
+            }
+            console.log(scoreboard)
+            console.log(groupedScore)
             const ratingFirst = scoreboard[0].rating
             const ratingLast = scoreboard[scoreboard.length - 1].rating
             const changeBase = Math.ceil(base + (ratingLast - ratingFirst) * 0.04)
-            for (let i = 0; i < scoreboard.length; i++) {
-                const scoreData = scoreboard[i]
-                const change = Math.ceil(changeBase * getMultiplier(i+1))
-                console.log(`${scoreData.name}: ${scoreData.rating} => ${scoreData.rating + change}`)
-                scoreData.ratingChange = change
-                await prisma.rating.updateMany({
-                    data: {
-                        rating: scoreData.rating + change
-                    },
-                    where: {
-                        user: {
-                            sessionId: {
-                                startsWith: scoreData.id
-                            }
+            for (let i = 0; i < groupedScore.length; i++) {
+                const scoreDataList = groupedScore[i]
+                for (const scoreData of scoreDataList) {
+                    const change = Math.ceil(changeBase * getMultiplier(i + 1))
+                    console.log(`${scoreData.name}: ${scoreData.rating} => ${scoreData.rating + change} (${change >= 0 ? `+${change}` : change})`)
+                    scoreData.ratingChange = change
+                    await prisma.rating.updateMany({
+                        data: {
+                            rating: scoreData.rating + change
                         },
-                        game: {
-                            name: this.room.gameData.id
+                        where: {
+                            user: {
+                                sessionId: {
+                                    startsWith: scoreData.id
+                                }
+                            },
+                            game: {
+                                name: this.room.gameData.id
+                            }
                         }
-                    }
-                })
+                    })
+                }
             }
         }
     }
