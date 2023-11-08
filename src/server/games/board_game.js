@@ -2,24 +2,28 @@ const {PrismaClient} = require('@prisma/client')
 const prisma = new PrismaClient()
 
 class BoardGame {
-    constructor(room, isRated) {
+    constructor(room, isRated, includeCpu) {
         this.server = require("../server")
         this.room = room
         this.isRated = isRated
+        this.includeCpu = includeCpu
         this.playersJoined = [...room.players]
         this.scores = {}
         this.duration = 0
         this.durationTimerId = setInterval(() => this.duration++, 1000)
         this.ended = false
 
-        room.players.forEach((player) => {
+        this.room.players.forEach((player) => {
             this.scores[player.id] = {name: player.name, score: 0}
+        })
+
+        this.getRealPlayers().forEach((player) => {
             const socket = this.server.getSocket(player)
             socket.on('disconnecting', () => this.handleDisconnect(player))
         })
 
         if (this.isRated) {
-            this.playersJoined.forEach(async (player) => {
+            this.getRealPlayers().forEach(async (player) => {
                 await prisma.rating.findFirst({
                     where: {
                         user: {
@@ -37,6 +41,14 @@ class BoardGame {
     }
 
     start() {}
+
+    isCpuPlayer(player) {
+        return player.id.startsWith('cpugamer_')
+    }
+
+    getRealPlayers() {
+        return this.room.players.filter((player) => !this.isCpuPlayer(player))
+    }
 
     getScore(player) {
         return this.scores[player.id].score
@@ -68,6 +80,9 @@ class BoardGame {
     }
 
     async storeResultsToDatabase(gameName, scoreboard) {
+        if (this.includeCpu) {
+            return
+        }
         const userData = {}
         const userColumnNames = ['user1', 'user2', 'user3', 'user4']
         const scoreColumnNames = ['score1', 'score2', 'score3', 'score4']
@@ -205,8 +220,6 @@ class BoardGame {
                 }
                 groupedScore[placement].push(scoreData)
             }
-            console.log(scoreboard)
-            console.log(groupedScore)
             const ratingFirst = scoreboard[0].rating
             const ratingLast = scoreboard[scoreboard.length - 1].rating
             const changeBase = Math.ceil(base + (ratingLast - ratingFirst) * 0.04)
@@ -245,7 +258,7 @@ class BoardGame {
         const scoreboard = this.createScoreboard()
         await this.storeResultsToDatabase(this.room.gameData.id, scoreboard)
         this.server.io.to(this.room.id).emit('game_end', scoreboard)
-        this.room.players.forEach((p) => {
+        this.getRealPlayers().forEach((p) => {
             const socket = this.server.getSocket(p)
             socket.removeAllListeners()
             this.server.leaveRoom(socket, this.room.id)
@@ -254,10 +267,13 @@ class BoardGame {
     }
 
     handleDisconnect(player)  {
+        if (this.isCpuPlayer(player)) {
+            return
+        }
         const playerIndex = this.room.players.indexOf(player)
         this.server.io.to(this.room.id).emit('game_disconnect', playerIndex)
         this.room.players.splice(playerIndex, 1)
-        if (this.room.players.length <= 1) {
+        if (this.getRealPlayers().length <= 1) {
             this.handleEnd()
         }
     }

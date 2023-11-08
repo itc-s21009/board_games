@@ -1,7 +1,7 @@
 const BoardGame = require("./board_game");
 class BoardGameSinkei extends BoardGame {
-    constructor(room, isRated) {
-        super(room, isRated);
+    constructor(room, isRated, includeCpu) {
+        super(room, isRated, includeCpu);
     }
     start() {
         const CARDS = require("../../server/cards");
@@ -15,6 +15,7 @@ class BoardGameSinkei extends BoardGame {
             {ROWS: 6, COLUMNS: 8}  // 4人, 48枚
         ]
 
+        console.log(this.room.players)
         const {ROWS, COLUMNS} = SIZE_SET[this.room.players.length - 2]
         io.to(this.room.id).emit('sinkei_areasize', {ROWS: ROWS, COLUMNS: COLUMNS})
 
@@ -88,45 +89,57 @@ class BoardGameSinkei extends BoardGame {
             pos1 = null
             pos2 = null
             setTimer(15)
+            if (this.isCpuPlayer(drawer)) {
+                const rnd = (max) => Math.floor(Math.random() * max)
+                const pick1 = {x: rnd(COLUMNS), y: rnd(ROWS)}
+                const pick2 = {x: rnd(COLUMNS), y: rnd(ROWS)}
+                setTimeout(() => {
+                    handlePick(drawer, pick1)
+                    setTimeout(() => {
+                        handlePick(drawer, pick2)
+                    }, 500)
+                }, 1000);
+            }
         }
         // カードのIDの末尾２文字を比較して、同じ数字であるかをチェックする
         // 'club_01' と 'diamond_01' の場合は true
         const isEqualNumber = (card1, card2) => card1.slice(-2) === card2.slice(-2)
-        this.room.players.forEach((player) => {
-            const socket = this.server.getSocket(player)
-            socket.on('sinkei_pick', (position) => {
-                if (drawCount >= 2) {
-                    return
-                }
-                const {x, y} = position
-                if (player.id === drawer.id) {
-                    io.to(this.room.id).emit('sinkei_set', position, cards[y][x])
-                    setTimeout(() => {
-                        if (!pos1) {
-                            pos1 = {x, y}
-                        } else if (!pos2) {
-                            pos2 = {x, y}
-                            const isEqual = isEqualNumber(cards[pos1.y][pos1.x], cards[pos2.y][pos2.x])
-                            io.to(this.room.id).emit('sinkei_result', pos1, pos2, isEqual)
-                            if (isEqual) {
-                                io.to(this.room.id).emit('sinkei_delete', pos1)
-                                io.to(this.room.id).emit('sinkei_delete', pos2)
-                                this.setScore(player, this.getScore(player) + 2)
-                                cardsRemain -= 2
-                                if (cardsRemain <= 0) {
-                                    this.handleEnd()
-                                } else {
-                                    changeDrawer(false)
-                                }
+        const handlePick = (player, position) => {
+            if (drawCount >= 2) {
+                return
+            }
+            const {x, y} = position
+            if (player.id === drawer.id) {
+                io.to(this.room.id).emit('sinkei_set', position, cards[y][x])
+                setTimeout(() => {
+                    if (!pos1) {
+                        pos1 = {x, y}
+                    } else if (!pos2) {
+                        pos2 = {x, y}
+                        const isEqual = isEqualNumber(cards[pos1.y][pos1.x], cards[pos2.y][pos2.x])
+                        io.to(this.room.id).emit('sinkei_result', pos1, pos2, isEqual)
+                        if (isEqual) {
+                            io.to(this.room.id).emit('sinkei_delete', pos1)
+                            io.to(this.room.id).emit('sinkei_delete', pos2)
+                            this.setScore(player, this.getScore(player) + 2)
+                            cardsRemain -= 2
+                            if (cardsRemain <= 0) {
+                                this.handleEnd()
                             } else {
-                                io.to(this.room.id).emit('sinkei_set', pos1, CARDS.BACK)
-                                io.to(this.room.id).emit('sinkei_set', pos2, CARDS.BACK)
-                                changeDrawer()
+                                changeDrawer(false)
                             }
+                        } else {
+                            io.to(this.room.id).emit('sinkei_set', pos1, CARDS.BACK)
+                            io.to(this.room.id).emit('sinkei_set', pos2, CARDS.BACK)
+                            changeDrawer()
                         }
-                    }, 1000)
-                }
-            })
+                    }
+                }, 1000)
+            }
+        }
+        this.getRealPlayers().forEach((player) => {
+            const socket = this.server.getSocket(player)
+            socket.on('sinkei_pick', (position) => handlePick(player, position))
             socket.on('disconnecting', () => {
                 const playerIndex = this.room.players.indexOf(player)
                 if (drawerPointer === playerIndex) {

@@ -1,7 +1,7 @@
 const BoardGame = require('./board_game')
 class BoardGameReversi extends BoardGame {
-    constructor(room, isRated) {
-        super(room, isRated);
+    constructor(room, isRated, includeCpu) {
+        super(room, isRated, includeCpu);
     }
 
     start() {
@@ -119,6 +119,8 @@ class BoardGameReversi extends BoardGame {
         }
         this.room.players.forEach((player) => {
             this.setScore(player, 2) // 最初は2枚ずつ
+        })
+        this.getRealPlayers().forEach((player) => {
             const socket = this.server.getSocket(player)
             const color = colors[player.id]
             const oppositePlayer = this.room.players.filter((p) => p.id !== player.id)[0]

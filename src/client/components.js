@@ -1,10 +1,17 @@
 import {
     BG_IN_GAME,
-    BG_MENU, COLOR_DIVIDER,
+    BG_MENU,
+    COLOR_DIVIDER,
     COLOR_FIRST,
-    COLOR_GAME_FIRST, COLOR_SECOND, COLOR_TEXT_PRIMARY, COLOR_TEXT_WHITE, COLOR_THIRD, MODE_FRIEND_MATCH, socket
+    COLOR_GAME_FIRST,
+    COLOR_SECOND,
+    COLOR_TEXT_PRIMARY,
+    COLOR_TEXT_WHITE,
+    COLOR_THIRD, GAME_REVERSI, GAME_SINKEI,
+    MODE_CPU,
+    MODE_FRIEND_MATCH, socket
 } from "./game";
-import {HEIGHT, SCENE_MATCHING, WIDTH} from "./scenes/scene_loader";
+import {HEIGHT, SCENE_MATCHING, SCENE_REVERSI, SCENE_SINKEI, WIDTH} from "./scenes/scene_loader";
 
 const hexToStr = (hex) => `#${hex.toString(16)}`
 
@@ -79,6 +86,27 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
                         roomId: roomId,
                         isOwner: true
                     })
+                })
+                return
+            } else if (mode === MODE_CPU) {
+                socket.emit('start_cpu', gameData, (players) => {
+                    if (!players) {
+                        return
+                    }
+                    const data = {
+                        players: players,
+                        isRated: false
+                    }
+                    switch (gameData.id) {
+                        case GAME_SINKEI.id:
+                            scene.moveTo(SCENE_SINKEI, data)
+                            break
+                        case GAME_REVERSI.id:
+                            scene.moveTo(SCENE_REVERSI, data)
+                            break
+                        default:
+                            break
+                    }
                 })
                 return
             }

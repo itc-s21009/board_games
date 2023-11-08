@@ -118,13 +118,14 @@ const leaveRoom = (socket, roomId) => {
     return true
 }
 
-const startGame = (roomId, isRated) => {
+const startGame = (roomId, isRated, cpusToPlay=0) => {
     roomId = roomId.toString()
     const room = queues[roomId]
     if (!room) {
         return false
     }
     let started = false
+    const includeCpu = cpusToPlay > 0
     const start = () => {
         if (started) {
             return
@@ -132,16 +133,16 @@ const startGame = (roomId, isRated) => {
         started = true
         switch(room.gameData.id) {
             case 'sinkei':
-                new BoardGameSinkei(room, isRated).start()
+                new BoardGameSinkei(room, isRated, includeCpu).start()
                 return true
             case 'reversi':
-                new BoardGameReversi(room, isRated).start()
+                new BoardGameReversi(room, isRated, includeCpu).start()
                 return true
             default:
                 return false
         }
     }
-    let playersNotReady = room.players
+    let playersNotReady = [...room.players]
     room.players.forEach((readyPlayer) => {
         const socket = getSocket(readyPlayer)
         socket.once('ready', () => {
@@ -151,6 +152,16 @@ const startGame = (roomId, isRated) => {
             }
         })
     })
+    if (includeCpu) {
+        const cpusNeeded = room.gameData.maxPlayers <= room.players.length + cpusToPlay ? room.gameData.maxPlayers - room.players.length : cpusToPlay
+        for (let i = 1; i <= cpusNeeded; i++) {
+            const dummyPlayer = {
+                id: `cpugamer_${i}`,
+                name: `cpu_${i}`
+            }
+            room.players.push(dummyPlayer)
+        }
+    }
     setTimeout(() => {
         // TODO ５秒以内に準備完了できなかったプレイヤーを退出させる処理
         let cancelled = false
@@ -311,6 +322,15 @@ const registerListeners = (socket) => {
             return
         }
         dequeuePlayersAndGo(roomId)
+    })
+
+    socket.on('start_cpu', (gameData, callback) => {
+        const roomId = `game_${generateRoomId()}`
+        createRoom(roomId, gameData)
+        console.log(`game room(cpu): ${roomId}`)
+        joinRoom(socket, roomId)
+        startGame(roomId, false, 1)
+        callback(queues[roomId].players)
     })
 
     socket.on('disconnecting', () => {
