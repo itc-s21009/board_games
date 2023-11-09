@@ -1,4 +1,5 @@
 const {PrismaClient} = require('@prisma/client')
+const {EASY} = require("../cpuDifficulty");
 const prisma = new PrismaClient()
 
 class BoardGame {
@@ -38,6 +39,15 @@ class BoardGame {
                 })
             })
         }
+        // cpuごとの保持データ {id: {}}
+        this.cpuProperties = {}
+        this.getCpuPlayers().forEach((cpuPlayer) => this.cpuProperties[cpuPlayer.id] = {})
+
+        // 仮でEASY登録
+        this.getCpuPlayers().forEach((cpuPlayer) => {
+            const property = this.getCpuProperty(cpuPlayer)
+            property.difficulty = EASY
+        })
     }
 
     start() {}
@@ -48,6 +58,14 @@ class BoardGame {
 
     getRealPlayers() {
         return this.room.players.filter((player) => !this.isCpuPlayer(player))
+    }
+
+    getCpuPlayers() {
+        return this.room.players.filter((player) => this.isCpuPlayer(player))
+    }
+
+    getCpuProperty(cpuPlayer) {
+        return this.cpuProperties[cpuPlayer.id]
     }
 
     getScore(player) {

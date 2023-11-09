@@ -1,4 +1,5 @@
 const BoardGame = require("./board_game");
+const {EASY} = require("../cpuDifficulty");
 class BoardGameSinkei extends BoardGame {
     constructor(room, isRated, includeCpu) {
         super(room, isRated, includeCpu);
@@ -90,15 +91,7 @@ class BoardGameSinkei extends BoardGame {
             pos2 = null
             setTimer(15)
             if (this.isCpuPlayer(drawer)) {
-                const rnd = (max) => Math.floor(Math.random() * max)
-                const pick1 = {x: rnd(COLUMNS), y: rnd(ROWS)}
-                const pick2 = {x: rnd(COLUMNS), y: rnd(ROWS)}
-                setTimeout(() => {
-                    handlePick(drawer, pick1)
-                    setTimeout(() => {
-                        handlePick(drawer, pick2)
-                    }, 500)
-                }, 1000);
+                cpuHandleDrawer(drawer)
             }
         }
         // カードのIDの末尾２文字を比較して、同じ数字であるかをチェックする
@@ -121,6 +114,8 @@ class BoardGameSinkei extends BoardGame {
                         if (isEqual) {
                             io.to(this.room.id).emit('sinkei_delete', pos1)
                             io.to(this.room.id).emit('sinkei_delete', pos2)
+                            cards[pos1.y][pos1.x] = null
+                            cards[pos2.y][pos2.x] = null
                             this.setScore(player, this.getScore(player) + 2)
                             cardsRemain -= 2
                             if (cardsRemain <= 0) {
@@ -148,6 +143,40 @@ class BoardGameSinkei extends BoardGame {
             })
         })
         changeDrawer(false)
+
+        const getRandomPosition = () => {
+            const rnd = (max) => Math.floor(Math.random() * max)
+            while (true) {
+                const pos = {x: rnd(COLUMNS), y: rnd(ROWS)}
+                if (cards[pos.y][pos.x] !== null) {
+                    return pos
+                }
+            }
+        }
+        const getRandomTwoPosition = () => {
+            const pos1 = getRandomPosition()
+            while (true) {
+                const pos2 = getRandomPosition()
+                if (pos1.x !== pos2.x || pos1.y !== pos2.y) {
+                    return {pos1, pos2}
+                }
+            }
+        }
+        const cpuHandleDrawer = (cpuPlayer) => {
+            switch (this.getCpuProperty(cpuPlayer).difficulty) {
+                case EASY:
+                    const {pos1, pos2} = getRandomTwoPosition()
+                    setTimeout(() => {
+                        handlePick(cpuPlayer, pos1)
+                        setTimeout(() => {
+                            handlePick(cpuPlayer, pos2)
+                        }, 500)
+                    }, 1000);
+                    break
+                default:
+                    break
+            }
+        }
     }
 }
 
