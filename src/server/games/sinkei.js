@@ -1,5 +1,5 @@
 const BoardGame = require("./board_game");
-const {EASY} = require("../cpuDifficulty");
+const {EASY, NORMAL, HARD} = require("../cpuDifficulty");
 class BoardGameSinkei extends BoardGame {
     constructor(room, isRated, includeCpu) {
         super(room, isRated, includeCpu);
@@ -104,6 +104,7 @@ class BoardGameSinkei extends BoardGame {
             const {x, y} = position
             if (player.id === drawer.id) {
                 io.to(this.room.id).emit('sinkei_set', position, cards[y][x])
+                rememberCard(x, y, cards[y][x])
                 setTimeout(() => {
                     if (!pos1) {
                         pos1 = {x, y}
@@ -116,9 +117,12 @@ class BoardGameSinkei extends BoardGame {
                             io.to(this.room.id).emit('sinkei_delete', pos2)
                             cards[pos1.y][pos1.x] = null
                             cards[pos2.y][pos2.x] = null
+                            forgetCard(pos1.x, pos1.y)
+                            forgetCard(pos2.x, pos2.y)
                             this.setScore(player, this.getScore(player) + 2)
                             cardsRemain -= 2
                             if (cardsRemain <= 0) {
+                                clearInterval(timerId)
                                 this.handleEnd()
                             } else {
                                 changeDrawer(false)
@@ -144,6 +148,30 @@ class BoardGameSinkei extends BoardGame {
         })
         changeDrawer(false)
 
+        // めくったカードを記憶する
+        let memory = []
+        const rememberCard = (x, y, type) => {
+            // 同じ座標をすでに記憶している場合は、何もしない
+            if (memory.filter((mem) => mem.x === x && mem.y === y).length > 0) {
+                return
+            }
+            // 10枚目以降は、1枚目から忘れさせる
+            if (memory.length > 32) {
+                memory.slice(1)
+            }
+            memory.push({x, y, type})
+        }
+        const forgetCard = (x, y) => memory = memory.filter((mem) => mem.x !== x || mem.y !== y)
+        const getMaxRememberCards = (cpuPlayer) => ({
+            [EASY]: 0,
+            [NORMAL]: 5,
+            [HARD]: 10
+        }[this.getCpuProperty(cpuPlayer).difficulty])
+        const getMemoryPossibility = (cpuPlayer) => ({
+            [EASY]: 0,
+            [NORMAL]: 0.5,
+            [HARD]: 1
+        }[this.getCpuProperty(cpuPlayer).difficulty])
         const getRandomPosition = () => {
             const rnd = (max) => Math.floor(Math.random() * max)
             while (true) {
@@ -163,19 +191,29 @@ class BoardGameSinkei extends BoardGame {
             }
         }
         const cpuHandleDrawer = (cpuPlayer) => {
-            switch (this.getCpuProperty(cpuPlayer).difficulty) {
-                case EASY:
-                    const {pos1, pos2} = getRandomTwoPosition()
-                    setTimeout(() => {
-                        handlePick(cpuPlayer, pos1)
-                        setTimeout(() => {
-                            handlePick(cpuPlayer, pos2)
-                        }, 500)
-                    }, 1000);
-                    break
-                default:
-                    break
+            if (this.ended) {
+                return
             }
+            const pickTwoCards = (pos1, pos2) =>
+                setTimeout(() => {
+                    handlePick(cpuPlayer, pos1)
+                    setTimeout(() => {
+                        handlePick(cpuPlayer, pos2)
+                    }, 500)
+                }, 1000);
+            const rememberCards = memory.reverse().slice(0, getMaxRememberCards(cpuPlayer))
+            for (let i = 0; i < rememberCards.length; i++) {
+                const mem1 = rememberCards[i]
+                for (let j = i + 1; j < rememberCards.length; j++) {
+                    const mem2 = rememberCards[j]
+                    if (Math.random() < getMemoryPossibility(cpuPlayer) && isEqualNumber(mem1.type, mem2.type)) {
+                        pickTwoCards(mem1, mem2)
+                        return
+                    }
+                }
+            }
+            const {pos1, pos2} = getRandomTwoPosition()
+            pickTwoCards(pos1, pos2)
         }
     }
 }
