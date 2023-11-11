@@ -1,8 +1,8 @@
 const BoardGame = require("./board_game");
 const {EASY, NORMAL, HARD} = require("../cpuDifficulty");
 class BoardGameSinkei extends BoardGame {
-    constructor(room, isRated, includeCpu) {
-        super(room, isRated, includeCpu);
+    constructor(room, isRated, cpuSettings) {
+        super(room, isRated, cpuSettings);
     }
     start() {
         const CARDS = require("../../server/cards");

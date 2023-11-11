@@ -118,14 +118,13 @@ const leaveRoom = (socket, roomId) => {
     return true
 }
 
-const startGame = (roomId, isRated, cpusToPlay=0) => {
+const startGame = (roomId, isRated, cpuSettings=null) => {
     roomId = roomId.toString()
     const room = queues[roomId]
     if (!room) {
         return false
     }
     let started = false
-    const includeCpu = cpusToPlay > 0
     const start = () => {
         if (started) {
             return
@@ -133,10 +132,10 @@ const startGame = (roomId, isRated, cpusToPlay=0) => {
         started = true
         switch(room.gameData.id) {
             case 'sinkei':
-                new BoardGameSinkei(room, isRated, includeCpu).start()
+                new BoardGameSinkei(room, isRated, cpuSettings).start()
                 return true
             case 'reversi':
-                new BoardGameReversi(room, isRated, includeCpu).start()
+                new BoardGameReversi(room, isRated, cpuSettings).start()
                 return true
             default:
                 return false
@@ -152,8 +151,8 @@ const startGame = (roomId, isRated, cpusToPlay=0) => {
             }
         })
     })
-    if (includeCpu) {
-        const cpusNeeded = room.gameData.maxPlayers <= room.players.length + cpusToPlay ? room.gameData.maxPlayers - room.players.length : cpusToPlay
+    if (cpuSettings) {
+        const cpusNeeded = room.gameData.maxPlayers <= room.players.length + cpuSettings.cpus ? room.gameData.maxPlayers - room.players.length : cpuSettings.cpus
         for (let i = 1; i <= cpusNeeded; i++) {
             const dummyPlayer = {
                 id: `cpugamer_${i}`,
@@ -324,12 +323,16 @@ const registerListeners = (socket) => {
         dequeuePlayersAndGo(roomId)
     })
 
-    socket.on('start_cpu', (gameData, callback) => {
+    socket.on('start_cpu', (gameData, difficulty, callback) => {
         const roomId = `game_${generateRoomId()}`
         createRoom(roomId, gameData)
         console.log(`game room(cpu): ${roomId}`)
         joinRoom(socket, roomId)
-        startGame(roomId, false, 1)
+        const cpuSettings = {
+            cpus: 1,
+            difficulty: difficulty
+        }
+        startGame(roomId, false, cpuSettings)
         callback(queues[roomId].players)
     })
 

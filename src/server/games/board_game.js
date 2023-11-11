@@ -1,13 +1,12 @@
 const {PrismaClient} = require('@prisma/client')
-const {EASY} = require("../cpuDifficulty");
 const prisma = new PrismaClient()
 
 class BoardGame {
-    constructor(room, isRated, includeCpu) {
+    constructor(room, isRated, cpuSettings) {
         this.server = require("../server")
         this.room = room
         this.isRated = isRated
-        this.includeCpu = includeCpu
+        this.includeCpu = cpuSettings ? cpuSettings.cpus > 0 : false
         this.playersJoined = [...room.players]
         this.scores = {}
         this.duration = 0
@@ -43,10 +42,9 @@ class BoardGame {
         this.cpuProperties = {}
         this.getCpuPlayers().forEach((cpuPlayer) => this.cpuProperties[cpuPlayer.id] = {})
 
-        // 仮でEASY登録
         this.getCpuPlayers().forEach((cpuPlayer) => {
             const property = this.getCpuProperty(cpuPlayer)
-            property.difficulty = EASY
+            property.difficulty = cpuSettings.difficulty
         })
     }
 

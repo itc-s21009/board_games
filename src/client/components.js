@@ -12,6 +12,7 @@ import {
     MODE_FRIEND_MATCH, socket
 } from "./game";
 import {HEIGHT, SCENE_MATCHING, SCENE_REVERSI, SCENE_SINKEI, WIDTH} from "./scenes/scene_loader";
+import {EASY, HARD, NORMAL} from "./cpuDifficulty";
 
 const hexToStr = (hex) => `#${hex.toString(16)}`
 
@@ -116,7 +117,9 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
                         }
                     })
                 }
-
+                objBtnEasy.setOnClick(() => requestStartCpu(EASY))
+                objBtnNormal.setOnClick(() => requestStartCpu(NORMAL))
+                objBtnHard.setOnClick(() => requestStartCpu(HARD))
                 objBtnBack.setOnClick(() => {
                     [objBlur, objWindow, objTextSelect, objBtnEasy, objBtnNormal, objBtnHard, objBtnBack].forEach((obj) => obj.destroy())
                 })
