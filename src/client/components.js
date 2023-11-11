@@ -89,24 +89,36 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
                 })
                 return
             } else if (mode === MODE_CPU) {
-                socket.emit('start_cpu', gameData, (players) => {
-                    if (!players) {
-                        return
-                    }
-                    const data = {
-                        players: players,
-                        isRated: false
-                    }
-                    switch (gameData.id) {
-                        case GAME_SINKEI.id:
-                            scene.moveTo(SCENE_SINKEI, data)
-                            break
-                        case GAME_REVERSI.id:
-                            scene.moveTo(SCENE_REVERSI, data)
-                            break
-                        default:
-                            break
-                    }
+                const objWindow = drawWindow(scene, WIDTH / 2, 199, 362, 268, COLOR_FIRST)
+                const objTextSelect = createText(scene, WIDTH / 2, 220, 'CPUの難易度を選択', {fontSize: 32})
+                const objBtnEasy = createButton(scene, 30 + 100/2, 263, 100, 132, COLOR_SECOND, 'よわい', {fontSize: 24})
+                const objBtnNormal = createButton(scene, 138 + 100/2, 263, 100, 132, COLOR_SECOND, 'ふつう', {fontSize: 24})
+                const objBtnHard = createButton(scene, 246 + 100/2, 263, 100, 132, COLOR_SECOND, 'つよい', {fontSize: 24})
+                const objBtnBack = createButton(scene, 30 + 316/2, 411, 316, 42, COLOR_SECOND, '戻る', {fontSize: 24})
+                const requestStartCpu = (difficulty) => {
+                    socket.emit('start_cpu', gameData, difficulty, (players) => {
+                        if (!players) {
+                            return
+                        }
+                        const data = {
+                            players: players,
+                            isRated: false
+                        }
+                        switch (gameData.id) {
+                            case GAME_SINKEI.id:
+                                scene.moveTo(SCENE_SINKEI, data)
+                                break
+                            case GAME_REVERSI.id:
+                                scene.moveTo(SCENE_REVERSI, data)
+                                break
+                            default:
+                                break
+                        }
+                    })
+                }
+
+                objBtnBack.setOnClick(() => {
+                    [objBlur, objWindow, objTextSelect, objBtnEasy, objBtnNormal, objBtnHard, objBtnBack].forEach((obj) => obj.destroy())
                 })
                 return
             }
