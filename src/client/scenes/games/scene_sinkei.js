@@ -22,6 +22,24 @@ export class SceneSinkei extends BoardGameScene {
     }
 
     create() {
+        let everyoneReady = false
+        const handleTimeout = () => {
+            if (everyoneReady) {
+                return
+            }
+            drawBlur(this)
+            drawWindow(this, WIDTH / 2, 204, 285, 177, COLOR_GAME_FIRST)
+            createText(this, WIDTH / 2, 224, `ゲームを読み込み\nできませんでした`)
+                .setAlign('center')
+                .setOrigin(0.5, 0)
+            const objBtnBack = createButton(this, WIDTH / 2, 306, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})
+            objBtnBack.setOnClick(() => {
+                this.moveTo(SCENE_TITLE)
+                this.clearHistory()
+            })
+        }
+        this.socketOnce('ready', () => everyoneReady = true)
+        setTimeout(handleTimeout, 5000)
         drawBackground(this, BG_IN_GAME)
         const objTextState = createText(this, WIDTH / 2, 24, '', {fontSize: 16})
         const objTimer = createCircleNumber(this, 320 + 50/2, 5 + 25/2 + 25/2, 25, COLOR_GAME_SECOND, 0)
@@ -220,32 +238,6 @@ export class SceneSinkei extends BoardGameScene {
             }
             scores[victim.id].handleDisconnect()
             this.players.splice(playerIndex, 1)
-        })
-        this.socketOn('game_cancelled', () => {
-            clearInterval(timerId)
-            drawBlur(this)
-            drawWindow(this, WIDTH / 2, 204, 285, 177, COLOR_GAME_FIRST)
-            createText(this, WIDTH / 2, 224, `ゲームを開始\nできませんでした`)
-                .setAlign('center')
-                .setOrigin(0.5, 0)
-            const objBtnBack = createButton(this, WIDTH / 2, 306, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})
-            objBtnBack.setOnClick(() => {
-                this.moveTo(SCENE_TITLE)
-                this.clearHistory()
-            })
-        })
-        this.socketOn('game_timeout', () => {
-            clearInterval(timerId)
-            drawBlur(this)
-            drawWindow(this, WIDTH / 2, 204, 285, 177, COLOR_GAME_FIRST)
-            createText(this, WIDTH / 2, 224, `ゲームを読み込み\nできませんでした`)
-                .setAlign('center')
-                .setOrigin(0.5, 0)
-            const objBtnBack = createButton(this, WIDTH / 2, 306, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})
-            objBtnBack.setOnClick(() => {
-                this.moveTo(SCENE_TITLE)
-                this.clearHistory()
-            })
         })
         this.socketOnce('game_end', (scoreboard) => {
             clearInterval(timerId)

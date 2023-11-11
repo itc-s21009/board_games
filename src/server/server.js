@@ -90,7 +90,7 @@ const joinRoom = (socket, roomId) => {
     roomId = roomId.toString()
     const room = queues[roomId]
     const player = getPlayer(socket)
-    if (!room || room.players.filter((p) => p.id === player.id).length > 0) {
+    if (!room || !player || room.players.filter((p) => p.id === player.id).length > 0) {
         return false
     }
     socket.join(roomId)
@@ -130,6 +130,7 @@ const startGame = (roomId, isRated, cpuSettings=null) => {
             return
         }
         started = true
+        io.to(roomId).emit('ready')
         switch(room.gameData.id) {
             case 'sinkei':
                 new BoardGameSinkei(room, isRated, cpuSettings).start()
@@ -169,6 +170,7 @@ const startGame = (roomId, isRated, cpuSettings=null) => {
             const playerIndex = room.players.indexOf(notReadyPlayer)
             leaveRoom(socket, roomId)
             socket.emit('game_timeout')
+            socket.removeAllListeners('ready')
             io.to(roomId).emit('game_disconnect', playerIndex)
             room.players.splice(playerIndex, 1)
             cancelled = room.players.length <= 1
