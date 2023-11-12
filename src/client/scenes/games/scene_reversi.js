@@ -94,6 +94,45 @@ export class SceneReversi extends BoardGameScene {
                 }
             })
         }
+        const getChanges = (x, y, color) => {
+            if (field[y][x].type !== NONE) {
+                return []
+            }
+            const changes = []
+            const oppositeColor = color === BLACK ? WHITE : BLACK
+            const DIRECTIONS = [
+                {x: 0, y: 1},   // 下
+                {x: 1, y: 0},   // 右
+                {x: 0, y: -1},  // 上
+                {x: -1, y: 0},  // 左
+                {x: 1, y: 1},   // 右下
+                {x: 1, y: -1},  // 右上
+                {x: -1, y: 1},  // 左下
+                {x: -1, y: -1}, // 左上
+            ]
+            DIRECTIONS.forEach((d) => {
+                const dx = d.x
+                const dy = d.y
+                let cx = x + dx
+                let cy = y + dy
+                const changesOnDirection = []
+                let foundOpposite = false
+                while (cx >= 0 && cx < 8 && cy >= 0 && cy < 8) {
+                    if (field[cy][cx].type === oppositeColor) {
+                        foundOpposite = true
+                        changesOnDirection.push({x: cx, y: cy})
+                    } else if (foundOpposite && field[cy][cx].type === color) {
+                        changes.push(...changesOnDirection)
+                        break
+                    } else {
+                        break
+                    }
+                    cx += dx
+                    cy += dy
+                }
+            })
+            return changes
+        }
 
         for (let y = 0; y < 8; y++) {
             // y行を{}で埋める
@@ -136,6 +175,7 @@ export class SceneReversi extends BoardGameScene {
         this.socketOn('reversi_timer', setTimer)
         const isMyself = (victim) => player.id.startsWith(victim.id)
 
+        const availableHintObjects = []
         const setDrawer = (drawerPointer) => {
             drawer = this.players[drawerPointer]
             if (isMyself(drawer)) {
@@ -143,6 +183,21 @@ export class SceneReversi extends BoardGameScene {
                 objTextState.text = `あなたの番です`
                 objTextState.setFontSize(28)
                 isMyTurn = true
+                const availablePositions = []
+                for (let y = 0; y < 8; y++) {
+                    for (let x = 0; x < 8; x++) {
+                        if (getChanges(x, y, MY_COLOR).length > 0) {
+                            availablePositions.push({x, y})
+                        }
+                    }
+                }
+                availablePositions.forEach(({x, y}) => {
+                    const offset = 43
+                    const objImageHint = this.add.image(37 + offset*x, 181 + offset*y, MY_COLOR === BLACK ? 'black' : 'white')
+                        .setOrigin(0.5)
+                        .setScale(0.08)
+                    availableHintObjects.push(objImageHint)
+                })
             } else {
                 objTextState.text = `${drawer.name} の番です`
                 objTextState.setFontSize(16)
@@ -151,6 +206,7 @@ export class SceneReversi extends BoardGameScene {
                     const {x, y} = pos
                     field[y][x].object.setTexture('background')
                 }
+                availableHintObjects.splice(0).forEach((obj) => obj.destroy())
             }
             objBtnPass.setVisible(isMyTurn)
         }

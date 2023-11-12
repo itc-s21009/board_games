@@ -112,7 +112,6 @@ class BoardGameReversi extends BoardGame {
             drawer = this.room.players[drawerPointer]
             setTimer(40)
         }
-        changeDrawer(false)
         const setCell = (x, y, color) => {
             field[y][x] = color
             io.to(this.room.id).emit('reversi_set', {x, y}, color)
@@ -160,6 +159,7 @@ class BoardGameReversi extends BoardGame {
                 }
             })
         })
+        changeDrawer(false)
     }
 }
 
