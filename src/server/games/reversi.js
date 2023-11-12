@@ -1,4 +1,5 @@
 const BoardGame = require('./board_game')
+const {EASY, NORMAL, HARD} = require("../cpuDifficulty");
 class BoardGameReversi extends BoardGame {
     constructor(room, isRated, cpuSettings) {
         super(room, isRated, cpuSettings);
@@ -98,60 +99,119 @@ class BoardGameReversi extends BoardGame {
                 for (let x = 0; x < 8; x++) {
                     const changes = getChanges(x, y, color)
                     if (changes.length > 0) {
-                        possibleCells.push({x, y})
+                        possibleCells.push({x, y, changes: changes.length})
                     }
                 }
             }
             if (possibleCells.length <= 0) {
                 drawerPointer = (++drawerPointer) % this.room.players.length
                 io.to(this.room.id).emit('reversi_pass')
-                setTimer(40)
-                return
             }
             io.to(this.room.id).emit('reversi_drawer', drawerPointer)
             drawer = this.room.players[drawerPointer]
             setTimer(40)
+            if (this.isCpuPlayer(drawer)) {
+                setTimeout(() => {
+                    if (this.ended) {
+                        return
+                    }
+                    let cells = []
+                    let changeCount
+                    switch(this.getCpuProperty(drawer).difficulty) {
+                        case EASY:
+                            changeCount = Math.max(...possibleCells.map((pos) => pos.changes))
+                            cells = possibleCells.filter((pos) => pos.changes === changeCount)
+                            break
+                        case NORMAL:
+                            cells = possibleCells
+                            break
+                        case HARD:
+                            // 角が取れれば角を取る
+                            const corners = possibleCells.filter((pos) =>
+                                pos.x === 0 && pos.y === 0
+                                || pos.x === 0 && pos.y === 7
+                                || pos.x === 7 && pos.y === 0
+                                || pos.x === 7 && pos.y === 7)
+                            if (corners.length > 0) {
+                                cells = corners
+                                break
+                            }
+                            // 端が取れれば端を取る
+                            const edges = possibleCells.filter((pos) =>
+                                pos.x === 0 || pos.x === 7
+                                || pos.y === 0 || pos.y === 7)
+                            if (edges.length > 0) {
+                                cells = edges
+                                break
+                            }
+                            let noneCount = 0
+                            for (let y = 0; y < 8; y++) {
+                                for (let x = 0; x < 8; x++) {
+                                    if (field[y][x] === NONE) {
+                                        noneCount++
+                                    }
+                                }
+                            }
+                            // 空きマスが32マスより少なければ裏返せる枚数が多いマス、32マス以上あれば裏返せる枚数が少ないマスを選ぶ
+                            if (noneCount < 32) {
+                                changeCount = Math.max(...possibleCells.map((pos) => pos.changes))
+                            } else {
+                                changeCount = Math.min(...possibleCells.map((pos) => pos.changes))
+                            }
+                            cells = possibleCells.filter((pos) => pos.changes === changeCount)
+                            break
+                        default:
+                            break
+                    }
+                    const pos = cells[Math.floor(Math.random() * cells.length)]
+                    handlePlace(pos.x, pos.y, drawer)
+                }, 1200)
+            }
         }
         const setCell = (x, y, color) => {
             field[y][x] = color
             io.to(this.room.id).emit('reversi_set', {x, y}, color)
+        }
+        const handlePlace = (x, y, player) => {
+            if (this.ended) {
+                return
+            }
+            const color = colors[player.id]
+            const changes = getChanges(x, y, color)
+            if (changes.length > 0) {
+                setCell(x, y, color)
+                changes.forEach(({x, y}) => {
+                    setCell(x, y, color)
+                })
+                changeDrawer(true)
+                const oppositeColor = color === BLACK ? WHITE : BLACK
+                let myStones = 0
+                let oppositeStones = 0
+                for (let y = 0; y < 8; y++) {
+                    for (let x = 0; x < 8; x++) {
+                        if (field[y][x] === color) {
+                            myStones++
+                        } else if (field[y][x] === oppositeColor) {
+                            oppositeStones++
+                        }
+                    }
+                }
+                const oppositePlayer = this.room.players.filter((p) => p.id !== player.id)[0]
+                this.setScore(player, myStones)
+                this.setScore(oppositePlayer, oppositeStones)
+                if (oppositeStones === 0 || myStones + oppositeStones === 64) {
+                    clearInterval(timerId)
+                    this.handleEnd()
+                }
+            }
         }
         this.room.players.forEach((player) => {
             this.setScore(player, 2) // 最初は2枚ずつ
         })
         this.getRealPlayers().forEach((player) => {
             const socket = this.server.getSocket(player)
-            const color = colors[player.id]
-            const oppositePlayer = this.room.players.filter((p) => p.id !== player.id)[0]
             socket.emit('reversi_mycolor', colors[player.id])
-            socket.on('reversi_place', ({x, y}) => {
-                const changes = getChanges(x, y, color)
-                if (changes.length > 0) {
-                    setCell(x, y, color)
-                    changes.forEach(({x, y}) => {
-                        setCell(x, y, color)
-                    })
-                    changeDrawer(true)
-                    const oppositeColor = color === BLACK ? WHITE : BLACK
-                    let myStones = 0
-                    let oppositeStones = 0
-                    for (let y = 0; y < 8; y++) {
-                        for (let x = 0; x < 8; x++) {
-                            if (field[y][x] === color) {
-                                myStones++
-                            } else if (field[y][x] === oppositeColor) {
-                                oppositeStones++
-                            }
-                        }
-                    }
-                    this.setScore(player, myStones)
-                    this.setScore(oppositePlayer, oppositeStones)
-                    if (oppositeStones === 0 || myStones + oppositeStones === 64) {
-                        clearInterval(timerId)
-                        this.handleEnd()
-                    }
-                }
-            })
+            socket.on('reversi_place', ({x, y}) => handlePlace(x, y, player))
             socket.on('reversi_pass', () => {
                 if (this.room.players[drawerPointer].id === player.id) {
                     io.to(this.room.id).emit('reversi_pass')
