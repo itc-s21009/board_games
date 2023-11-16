@@ -261,8 +261,9 @@ export class SceneSinkei extends BoardGameScene {
             scoreboard.forEach((scoreDataList, placement) => {
                 scoreDataList.forEach((scoreData) => {
                     const offsetY = i*48
-                    const objCirclePlacement = createCircleNumber(this, 87, 268 + offsetY, 20, COLOR_GAME_SECOND, placement + 1)
-                    const objRect = this.add.rectangle(120, 248 + offsetY, 187, 38, COLOR_GAME_SECOND)
+                    const color = scoreData.disconnected ? COLOR_DIVIDER : COLOR_GAME_SECOND
+                    const objCirclePlacement = createCircleNumber(this, 87, 268 + offsetY, 20, color, placement + 1)
+                    const objRect = this.add.rectangle(120, 248 + offsetY, 187, 38, color)
                         .setStrokeStyle(1, COLOR_DIVIDER)
                         .setOrigin(0)
                     const objTextName = createText(this, 120 + 10, 258 + offsetY, scoreData.name, {fontSize: 16})
