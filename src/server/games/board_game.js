@@ -109,7 +109,9 @@ class BoardGame {
             }
             groupedScore[placement].push(scoreData)
         }
-        groupedScore.push(disconnectList)
+        if (disconnectList.length > 0) {
+            groupedScore.push(disconnectList)
+        }
         return groupedScore
     }
 
