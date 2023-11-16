@@ -243,8 +243,9 @@ export class SceneReversi extends BoardGameScene {
             clearInterval(timerId)
             let placement = 0
             for (let i = 0; i < scoreboard.length; i++) {
-                const score = scoreboard[i]
-                if (isMyself(score)) {
+                const scoreDataList = scoreboard[i]
+                const containsMyself = scoreDataList.filter((score) => isMyself(score)).length > 0
+                if (containsMyself) {
                     placement = i+1
                     break
                 }
@@ -256,16 +257,20 @@ export class SceneReversi extends BoardGameScene {
             const objTextPlacement = createText(this, WIDTH / 2, 164, `ゲーム終了\n順位：${placement}位`)
             objects.push(objWindow, objTextPlacement)
 
-            scoreboard.forEach((scoreData, i) => {
-                const offsetY = i*48
-                const objCirclePlacement = createCircleNumber(this, 87, 268 + offsetY, 20, COLOR_GAME_SECOND, i+1)
-                const objRect = this.add.rectangle(120, 248 + offsetY, 187, 38, COLOR_GAME_SECOND)
-                    .setStrokeStyle(1, COLOR_DIVIDER)
-                    .setOrigin(0)
-                const objTextName = createText(this, 120 + 10, 258 + offsetY, scoreData.name, {fontSize: 16})
-                    .setOrigin(0)
-                const objCircleScore = createCircleNumber(this, 287, 268 + offsetY, 15, COLOR_GAME_THIRD, scoreData.score, 0xFFFF00)
-                objects.push(objCirclePlacement, objRect, objTextName, objCircleScore)
+            let i = 0
+            scoreboard.forEach((scoreDataList, placement) => {
+                scoreDataList.forEach((scoreData) => {
+                    const offsetY = i*48
+                    const objCirclePlacement = createCircleNumber(this, 87, 268 + offsetY, 20, COLOR_GAME_SECOND, placement + 1)
+                    const objRect = this.add.rectangle(120, 248 + offsetY, 187, 38, COLOR_GAME_SECOND)
+                        .setStrokeStyle(1, COLOR_DIVIDER)
+                        .setOrigin(0)
+                    const objTextName = createText(this, 120 + 10, 258 + offsetY, scoreData.name, {fontSize: 16})
+                        .setOrigin(0)
+                    const objCircleScore = createCircleNumber(this, 287, 268 + offsetY, 15, COLOR_GAME_THIRD, scoreData.score, 0xFFFF00)
+                    objects.push(objCirclePlacement, objRect, objTextName, objCircleScore)
+                    i++
+                })
             })
 
             const objBtnBack = createButton(this, WIDTH / 2, 466, 192, 55, COLOR_GAME_SECOND, 'タイトルに戻る', {fontSize: 24})

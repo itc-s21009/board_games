@@ -80,7 +80,7 @@ class BoardGame {
     }
 
     createScoreboard() {
-        const nameScores = Object.keys(this.scores)
+        const scoreDataList = Object.keys(this.scores)
             .map((playerId) => (
                 {
                     id: playerId.substring(0, 10),
@@ -88,11 +88,24 @@ class BoardGame {
                     score: this.scores[playerId].score
                 }
             ))
-        if (this.room.gameData.sortScoreInAsc) {
-            return nameScores.sort((a, b) => a.score > b.score ? 1 : -1)
-        } else {
-            return nameScores.sort((a, b) => a.score < b.score ? 1 : -1)
+        const sortedScoreDataList = this.room.gameData.sortScoreInAsc ?
+            scoreDataList.sort((a, b) => a.score > b.score ? 1 : -1) :
+            scoreDataList.sort((a, b) => a.score < b.score ? 1 : -1)
+
+        // 同順位をまとめる [ scoreData[] ]
+        const groupedScore = []
+        for (let i = 0, placement = 0; i < sortedScoreDataList.length; i++) {
+            const scoreData = sortedScoreDataList[i]
+            const score = scoreData.score
+            if (!groupedScore[placement]) {
+                groupedScore[placement] = []
+            } else if (groupedScore[placement][0].score !== score) {
+                placement++
+                groupedScore[placement] = []
+            }
+            groupedScore[placement].push(scoreData)
         }
+        return groupedScore
     }
 
     async storeResultsToDatabase(gameName, scoreboard) {
@@ -127,7 +140,8 @@ class BoardGame {
                 ...userData
             },
         })
-        const isDraw = scoreboard.filter((scoreData) => scoreData.score === scoreboard[0].score).length === scoreboard.length
+        const isDraw = scoreboard.length <= 1
+        // 引き分け数、勝利数、敗北数の加算処理
         if (isDraw) {
             for (const player of scoreboard) {
                 await prisma.stat.updateMany({
@@ -150,26 +164,28 @@ class BoardGame {
                 })
             }
         } else {
-            const winner = scoreboard[0]
-            const losers = scoreboard.slice(1)
-            await prisma.stat.updateMany({
-                where: {
-                    user: {
-                        sessionId: {
-                            startsWith: winner.id
+            const winners = scoreboard[0]
+            const losers = scoreboard.slice(1).flat()
+            for (const winner of winners) {
+                await prisma.stat.updateMany({
+                    where: {
+                        user: {
+                            sessionId: {
+                                startsWith: winner.id
+                            }
+                        },
+                        game: {
+                            name: gameName
+                        },
+                        isRated: this.isRated
+                    },
+                    data: {
+                        wins: {
+                            increment: 1
                         }
-                    },
-                    game: {
-                        name: gameName
-                    },
-                    isRated: this.isRated
-                },
-                data: {
-                    wins: {
-                        increment: 1
                     }
-                }
-            })
+                })
+            }
             for (const loser of losers) {
                 await prisma.stat.updateMany({
                     where: {
@@ -192,8 +208,7 @@ class BoardGame {
             }
         }
         if (this.isRated) {
-            for (let i = 0; i < scoreboard.length; i++) {
-                const scoreData = scoreboard[i]
+            for (const scoreData of scoreboard.flat()) {
                 await prisma.rating.findFirst({
                     where: {
                         user: {
@@ -210,12 +225,11 @@ class BoardGame {
                 })
             }
             if (isDraw) {
-                scoreboard.forEach((scoreData) => scoreData.ratingChange = 0)
+                // isDraw が true なら scoreboard の要素数は1個になっている
+                scoreboard[0].forEach((scoreData) => scoreData.ratingChange = 0)
                 return
             }
             const base = 32
-            // 同順位をまとめる [ scoreData[] ]
-            const groupedScore = []
             const getMultiplier = (rank) => {
                 const S = [
                     [0.0],
@@ -223,24 +237,17 @@ class BoardGame {
                     [1.0, -0.5, -1.0],
                     [1.0, 0.5, -0.5, -1.0]
                 ]
-                return S[Object.keys(groupedScore).length - 1][rank - 1]
+                return S[scoreboard.length - 1][rank - 1]
             }
-            for (let i = 0, placement = 0; i < scoreboard.length; i++) {
-                const scoreData = scoreboard[i]
-                const score = scoreData.score
-                if (!groupedScore[placement]) {
-                    groupedScore[placement] = []
-                } else if (groupedScore[placement][0].score !== score) {
-                    placement++
-                    groupedScore[placement] = []
-                }
-                groupedScore[placement].push(scoreData)
-            }
-            const ratingFirst = scoreboard[0].rating
-            const ratingLast = scoreboard[scoreboard.length - 1].rating
-            const changeBase = Math.ceil(base + (ratingLast - ratingFirst) * 0.04)
-            for (let i = 0; i < groupedScore.length; i++) {
-                const scoreDataList = groupedScore[i]
+            const scoresFirst = scoreboard[0]
+            const scoresLast = scoreboard[scoreboard.length - 1]
+            const ratingFirstSum = scoresFirst.map((scoreData) => scoreData.rating).reduce((a, b) => a + b)
+            const ratingLastSum = scoresLast.map((scoreData) => scoreData.rating).reduce((a, b) => a + b)
+            const ratingFirstAvg = Math.ceil(ratingFirstSum / scoresFirst.length)
+            const ratingLastAvg = Math.ceil(ratingLastSum / scoresLast.length)
+            const changeBase = Math.ceil(base + (ratingLastAvg - ratingFirstAvg) * 0.04)
+            for (let i = 0; i < scoreboard.length; i++) {
+                const scoreDataList = scoreboard[i]
                 for (const scoreData of scoreDataList) {
                     const change = Math.ceil(changeBase * getMultiplier(i + 1))
                     console.log(`${scoreData.name}: ${scoreData.rating} => ${scoreData.rating + change} (${change >= 0 ? `+${change}` : change})`)
