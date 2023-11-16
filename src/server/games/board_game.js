@@ -80,17 +80,21 @@ class BoardGame {
     }
 
     createScoreboard() {
+        const playerIds = this.room.players.map((player) => player.id)
         const scoreDataList = Object.keys(this.scores)
             .map((playerId) => (
                 {
                     id: playerId.substring(0, 10),
                     name: this.scores[playerId].name,
-                    score: this.scores[playerId].score
+                    score: this.scores[playerId].score,
+                    disconnected: !playerIds.includes(playerId)
                 }
             ))
+        const disconnectList = scoreDataList.filter((scoreData) => scoreData.disconnected)
+        const notDisconnectList = scoreDataList.filter((scoreData) => !scoreData.disconnected)
         const sortedScoreDataList = this.room.gameData.sortScoreInAsc ?
-            scoreDataList.sort((a, b) => a.score > b.score ? 1 : -1) :
-            scoreDataList.sort((a, b) => a.score < b.score ? 1 : -1)
+            notDisconnectList.sort((a, b) => a.score > b.score ? 1 : -1) :
+            notDisconnectList.sort((a, b) => a.score < b.score ? 1 : -1)
 
         // 同順位をまとめる [ scoreData[] ]
         const groupedScore = []
@@ -105,6 +109,7 @@ class BoardGame {
             }
             groupedScore[placement].push(scoreData)
         }
+        groupedScore.push(disconnectList)
         return groupedScore
     }
 
