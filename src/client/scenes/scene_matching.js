@@ -1,5 +1,13 @@
 import {HEIGHT, SCENE_MATCHING, SCENE_REVERSI, SCENE_SINKEI, WIDTH} from "./scene_loader";
-import {createButton, createText, drawBackground, drawBlur, drawGameDetail, drawWindow} from "../components";
+import {
+    createButton,
+    createText,
+    drawBackground,
+    drawBlur,
+    drawGameDetail,
+    drawWindow,
+    loadGameImages
+} from "../components";
 import {
     COLOR_DIVIDER, COLOR_FIRST,
     COLOR_FOURTH,
@@ -12,6 +20,10 @@ import {BoardGameScene} from "./board_game_scene";
 export class SceneMatching extends BoardGameScene {
     constructor() {
         super(SCENE_MATCHING)
+    }
+
+    preload() {
+        loadGameImages(this)
     }
 
     init(data) {

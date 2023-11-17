@@ -7,7 +7,7 @@ import {
     COLOR_SECOND,
     COLOR_TEXT_PRIMARY,
     COLOR_TEXT_WHITE,
-    COLOR_THIRD, GAME_REVERSI, GAME_SINKEI,
+    COLOR_THIRD, GAME_DAIFUGO, GAME_REVERSI, GAME_SINKEI, GAME_SPEED,
     MODE_CPU,
     MODE_FRIEND_MATCH, socket
 } from "./game";
@@ -63,6 +63,23 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
         objTextTitle,
         objTextDesc,
     ]
+    let objImgGame
+    switch(gameData.id) {
+        case GAME_SINKEI.id:
+            objImgGame = scene.add.image(188, 181, gameData.id)
+            objImgGame.setScale(0.3)
+            objImgGame.setOrigin(0.5, 0)
+            objects.push(objImgGame)
+            break
+        case GAME_REVERSI.id:
+            objImgGame = scene.add.image(188, 181, gameData.id)
+            objImgGame.setScale(0.38)
+            objImgGame.setOrigin(0.5, 0)
+            objects.push(objImgGame)
+            break
+        default:
+            break
+    }
     if (mode === -1) {
         const objBtnBack = createButton(scene, WIDTH / 2, 476, 325, 50, COLOR_SECOND, '閉じる', {fontSize: 24})
         objects.push(objBtnBack)
@@ -245,4 +262,16 @@ export const createCircleNumber = (scene, x, y, radius, color, num, textColor=CO
     container.getNumber = () => parseInt(objTextNumber.text)
     container.setFontSize = (n) => objTextNumber.setFontSize(`${n}px`)
     return container
+}
+
+export const loadGameImages = (scene) => {
+    const games = [
+        GAME_SPEED,
+        GAME_SINKEI,
+        GAME_DAIFUGO,
+        GAME_REVERSI
+    ]
+    games.forEach((game) => {
+        scene.load.image(game.id, `assets/games/${game.id}.png`)
+    })
 }

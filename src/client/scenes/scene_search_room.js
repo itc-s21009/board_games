@@ -1,5 +1,13 @@
 import {SCENE_MATCHING, SCENE_SEARCH_ROOM, WIDTH} from "./scene_loader";
-import {createButton, createText, drawBackground, drawBlur, drawGameDetail, drawWindow} from "../components";
+import {
+    createButton,
+    createText,
+    drawBackground,
+    drawBlur,
+    drawGameDetail,
+    drawWindow,
+    loadGameImages
+} from "../components";
 import {
     COLOR_DIVIDER,
     COLOR_FIRST,
@@ -18,6 +26,7 @@ export class SceneSearchRoom extends BoardGameScene {
 
     preload() {
         this.load.svg('backspace', 'assets/backspace-fill.svg', {scale: 3})
+        loadGameImages(this)
     }
 
     create() {
