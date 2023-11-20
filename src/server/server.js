@@ -17,7 +17,10 @@ app.use(session({
     }),
     secret: process.env.SECRET,
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: {
+        expires: new Date('3000-12-31')
+    }
 }))
 app.use(express.json())
 
