@@ -1,4 +1,4 @@
-import {HEIGHT, SCENE_MATCHING, SCENE_REVERSI, SCENE_SINKEI, WIDTH} from "./scene_loader";
+import {HEIGHT, SCENE_MATCHING, SCENE_REVERSI, SCENE_SINKEI, SCENE_SPEED, WIDTH} from "./scene_loader";
 import {
     createButton,
     createText,
@@ -11,7 +11,7 @@ import {
 import {
     COLOR_DIVIDER, COLOR_FIRST,
     COLOR_FOURTH,
-    COLOR_SECOND, COLOR_THIRD, GAME_REVERSI, GAME_SINKEI,
+    COLOR_SECOND, COLOR_THIRD, GAME_REVERSI, GAME_SINKEI, GAME_SPEED,
     MODE_FRIEND_MATCH, MODE_RATING,
     socket
 } from "../game";
@@ -108,6 +108,9 @@ export class SceneMatching extends BoardGameScene {
                         break
                     case GAME_REVERSI.id:
                         this.moveTo(SCENE_REVERSI, data)
+                        break
+                    case GAME_SPEED.id:
+                        this.moveTo(SCENE_SPEED, data)
                         break
                     default:
                         break

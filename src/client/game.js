@@ -9,6 +9,7 @@ import {SceneRanking} from "./scenes/scene_ranking";
 import {SceneSinkei} from "./scenes/games/scene_sinkei";
 import {SceneLoading} from "./scenes/scene_loading";
 import {SceneReversi} from "./scenes/games/scene_reversi";
+import {SceneSpeed} from "./scenes/games/scene_speed";
 
 export const COLOR_FIRST = 0x45eba5
 export const COLOR_SECOND = 0x21aba5
@@ -83,7 +84,7 @@ const config = {
     type: Phaser.AUTO,
     width: WIDTH,
     height: HEIGHT,
-    scene: [SceneLoading, SceneTitle, SceneSelectMode, SceneSelectGame, SceneMatching, SceneSearchRoom, SceneFriendMatch, SceneRanking, SceneSinkei, SceneReversi],
+    scene: [SceneLoading, SceneTitle, SceneSelectMode, SceneSelectGame, SceneMatching, SceneSearchRoom, SceneFriendMatch, SceneRanking, SceneSinkei, SceneReversi, SceneSpeed],
 }
 
 const game = new Phaser.Game(config)

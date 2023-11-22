@@ -11,3 +11,4 @@ export const SCENE_RANKING = 'ranking'
 
 export const SCENE_SINKEI = 'game_sinkei'
 export const SCENE_REVERSI = 'game_reversi'
+export const SCENE_SPEED = 'game_speed'
