@@ -9,12 +9,6 @@ export class SceneSinkei extends InGameScene {
         super(SCENE_SINKEI);
     }
 
-    init(data) {
-        super.init(data)
-        this.players = data.players
-        this.isRated = data.isRated
-    }
-
     preload() {
         Object.values(CARDS).forEach((cardId) => {
             this.load.image(cardId, `assets/cards/${cardId}.png`)

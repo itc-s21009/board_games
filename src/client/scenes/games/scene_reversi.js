@@ -10,12 +10,6 @@ export class SceneReversi extends InGameScene {
         super(SCENE_REVERSI);
     }
 
-    init(data) {
-        super.init(data)
-        this.players = data.players
-        this.isRated = data.isRated
-    }
-
     preload() {
         this.load.image('black', 'assets/reversi/black.png')
         this.load.image('white', 'assets/reversi/white.png')

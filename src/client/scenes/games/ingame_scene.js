@@ -10,6 +10,8 @@ export class InGameScene extends BoardGameScene {
 
     init(data) {
         super.init(data)
+        this.players = data.players
+        this.isRated = data.isRated
     }
 
     create() {
