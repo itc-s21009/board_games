@@ -94,18 +94,30 @@ class BoardGameReversi extends BoardGame {
                 drawerPointer = (++drawerPointer) % this.room.players.length
             }
             const color = colors[this.room.players[drawerPointer].id]
-            const possibleCells = []
-            for (let y = 0; y < 8; y++) {
-                for (let x = 0; x < 8; x++) {
-                    const changes = getChanges(x, y, color)
-                    if (changes.length > 0) {
-                        possibleCells.push({x, y, changes: changes.length})
+            const getPossibleCells = (color) => {
+                const possibleCells = []
+                for (let y = 0; y < 8; y++) {
+                    for (let x = 0; x < 8; x++) {
+                        const changes = getChanges(x, y, color)
+                        if (changes.length > 0) {
+                            possibleCells.push({x, y, changes: changes.length})
+                        }
                     }
                 }
+                return possibleCells
             }
+            const possibleCells = getPossibleCells(color)
             if (possibleCells.length <= 0) {
-                drawerPointer = (++drawerPointer) % this.room.players.length
-                io.to(this.room.id).emit('reversi_pass')
+                const oppositeColor = color === BLACK ? WHITE : BLACK
+                if (getPossibleCells(oppositeColor).length <= 0) {
+                    // お互い置けない場合は強制終了
+                    clearInterval(timerId)
+                    this.handleEnd()
+                } else {
+                    // 相手が置ける場合は順番交代
+                    drawerPointer = (++drawerPointer) % this.room.players.length
+                    io.to(this.room.id).emit('reversi_pass')
+                }
             }
             io.to(this.room.id).emit('reversi_drawer', drawerPointer)
             drawer = this.room.players[drawerPointer]
@@ -183,7 +195,6 @@ class BoardGameReversi extends BoardGame {
                 changes.forEach(({x, y}) => {
                     setCell(x, y, color)
                 })
-                changeDrawer(true)
                 const oppositeColor = color === BLACK ? WHITE : BLACK
                 let myStones = 0
                 let oppositeStones = 0
@@ -202,6 +213,8 @@ class BoardGameReversi extends BoardGame {
                 if (oppositeStones === 0 || myStones + oppositeStones === 64) {
                     clearInterval(timerId)
                     this.handleEnd()
+                } else {
+                    changeDrawer(true)
                 }
             }
         }
