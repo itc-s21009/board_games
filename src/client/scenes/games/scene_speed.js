@@ -138,8 +138,19 @@ export class SceneSpeed extends InGameScene {
 
         this.socketEmit('ready')
 
+        this.socketOn('game_setscore', (playerIndex, score) => {
+            const player = this.players[playerIndex]
+            setScore(player, score)
+        })
+
         this.socketOn('speed_set_field', (playerIndex, slot, type) => {
             setFieldCard(this.players[playerIndex], slot, type)
+        })
+        this.socketOn('speed_set_left', (type) => {
+            setLeftCard(type)
+        })
+        this.socketOn('speed_set_right', (type) => {
+            setRightCard(type)
         })
     }
 }
