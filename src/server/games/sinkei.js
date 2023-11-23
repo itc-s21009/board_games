@@ -5,7 +5,7 @@ class BoardGameSinkei extends BoardGame {
         super(room, isRated, cpuSettings);
     }
     start() {
-        const CARDS = require("../../server/cards");
+        const {CARDS, shuffle} = require("../../server/cards");
         const io = this.server.io
 
         // (4, 5), (5, 6), (6, 7), (6, 8)
@@ -23,14 +23,6 @@ class BoardGameSinkei extends BoardGame {
         const cardsCount = ROWS * COLUMNS
         let cardsRemain = cardsCount
         let cards = []
-        const shuffle = (array) => {
-            const newArray = [...array]
-            for (let i = array.length - 1; i >= 0; i--) {
-                let j = Math.floor(Math.random() * i);
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]]
-            }
-            return newArray
-        }
         const chunkArray = (array, chunkSize) => {
             const newArray = []
             for (let i = 0; i < array.length; i += chunkSize) {

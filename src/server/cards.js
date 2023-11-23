@@ -55,5 +55,13 @@ const CARDS = {
     JOKER: 'joker',
     JOKER_BLACK: 'joker_black',
 }
+const shuffle = (array) => {
+    const newArray = [...array]
+    for (let i = array.length - 1; i >= 0; i--) {
+        let j = Math.floor(Math.random() * i);
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]]
+    }
+    return newArray
+}
 
-module.exports = CARDS
+module.exports = {CARDS, shuffle}

@@ -1,5 +1,5 @@
 const BoardGame = require('./board_game')
-const CARDS = require('../cards')
+const {CARDS, shuffle} = require("../cards");
 
 class BoardGameSpeed extends BoardGame {
     constructor(room, isRated, cpuSettings) {
