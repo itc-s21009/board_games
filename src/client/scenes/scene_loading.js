@@ -17,7 +17,7 @@ export class SceneLoading extends BoardGameScene {
                 const id = data.id
                 socket.emit('get_name', id, (name) => {
                     if (name) {
-                        this.internalData.player = {id: id, name: name}
+                        this.internalData.player = {id: id.slice(0, 10), name: name}
                         this.moveTo(SCENE_TITLE)
                     } else {
                         drawBlur(this)
