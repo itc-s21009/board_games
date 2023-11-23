@@ -61,6 +61,7 @@ const socketQueueMap = {}
 
 const BoardGameSinkei = require('./games/sinkei')
 const BoardGameReversi = require('./games/reversi')
+const BoardGameSpeed = require("./games/speed");
 const {MODE_NORMAL, MODE_RATING} = require("./modes");
 
 const generateRoomId = () => {
@@ -140,6 +141,9 @@ const startGame = (roomId, isRated, cpuSettings=null) => {
                 return true
             case 'reversi':
                 new BoardGameReversi(room, isRated, cpuSettings).start()
+                return true
+            case 'speed':
+                new BoardGameSpeed(room, isRated, cpuSettings).start()
                 return true
             default:
                 return false

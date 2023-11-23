@@ -78,6 +78,23 @@ export class SceneSpeed extends InGameScene {
                     objImgDeckBottom.y -= offset*i
                     objImgDeckBottom.setScale(70 / 136)
                     objImgDeckBottom.setOrigin(0)
+                    objImgDeckBottom.setInteractive()
+                    // 一番上の1枚にクリック処理をつける
+                    if (this.isMyself(player) && i === cardCount - 1) {
+                        objImgDeckBottom.on('pointerover', () => {
+                            objImgDeckBottom.setTint(0x9999FF)
+                        })
+                        objImgDeckBottom.on('pointerout', () => {
+                            objImgDeckBottom.clearTint()
+                        })
+                        objImgDeckBottom.on('pointerup', () => {
+                            objImgDeckBottom.clearTint()
+                            setTimeout(() => {
+                                objImgDeckBottom.setTint(0x9999FF)
+                            }, 40)
+                            this.socketEmit('speed_pick_deck')
+                        })
+                    }
                     objectsDeck.push(objImgDeckBottom)
                     container.add(objImgDeckBottom)
                 }
@@ -120,5 +137,9 @@ export class SceneSpeed extends InGameScene {
         const setScore = (player, score) => scores[player.id].setScore(score)
 
         this.socketEmit('ready')
+
+        this.socketOn('speed_set_field', (playerIndex, slot, type) => {
+            setFieldCard(this.players[playerIndex], slot, type)
+        })
     }
 }
