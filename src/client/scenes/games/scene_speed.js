@@ -29,11 +29,25 @@ export class SceneSpeed extends InGameScene {
         const leftCard = this.add.image(108, 284, CARDS.BACK)
         leftCard.setScale(70 / 136)
         leftCard.setOrigin(0)
+        leftCard.setVisible(false)
         centerCards.left = leftCard
         const rightCard = this.add.image(196, 284, CARDS.BACK)
         rightCard.setScale(70 / 136)
         rightCard.setOrigin(0)
+        rightCard.setVisible(false)
         centerCards.right = rightCard
+        const setCard = (card, type) => {
+            card.setData('card', type)
+            if (type) {
+                card.setVisible(true)
+                card.setTexture(type)
+            } else {
+                card.setVisible(false)
+            }
+        }
+        const setLeftCard = (type) => setCard(leftCard, type)
+        const setRightCard = (type) => setCard(rightCard, type)
+        const setFieldCard = (player, i, type) => setCard(fieldCards[player.id][i], type)
         this.players.forEach((player) => {
             let score = 26
             const objRectScore = this.add.rectangle(102, 537, 50, 50, COLOR_GAME_SECOND)
@@ -98,6 +112,7 @@ export class SceneSpeed extends InGameScene {
                 if (!this.isMyself(player)) {
                     objImgCard.y = 170
                 }
+                objImgCard.setVisible(false)
                 fieldCards[player.id][i] = objImgCard
             }
         })
