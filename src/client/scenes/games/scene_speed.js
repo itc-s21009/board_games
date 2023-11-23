@@ -24,6 +24,8 @@ export class SceneSpeed extends InGameScene {
         const scores = {}
         // {player.id: image[]}
         const fieldCards = {}
+        // 選択中のカード 0〜3
+        let selectedSlot = -1
         // {left: image, right: image}
         const centerCards = {}
         const leftCard = this.add.image(108, 284, CARDS.BACK)
@@ -47,8 +49,22 @@ export class SceneSpeed extends InGameScene {
         }
         const setLeftCard = (type) => setCard(leftCard, type)
         const setRightCard = (type) => setCard(rightCard, type)
-        const setFieldCard = (player, i, type) => setCard(fieldCards[player.id][i], type)
+        const getFieldCard = (player, slot) => fieldCards[player.id][slot]
+        const setFieldCard = (player, slot, type) => setCard(getFieldCard(player, slot), type)
+        const setSelectedSlot = (slot) => {
+            const offset = 10
+            if (selectedSlot !== -1) {
+                const card = getFieldCard(this.getPlayer(), selectedSlot)
+                card.y += offset
+                card.clearTint()
+            }
+            const card = getFieldCard(this.getPlayer(), slot)
+            card.y -= offset
+            card.setTint(0xFFFF99)
+            selectedSlot = slot
+        }
         this.players.forEach((player) => {
+            const isMyself = this.isMyself(player)
             let score = 26
             const objRectScore = this.add.rectangle(102, 537, 50, 50, COLOR_GAME_SECOND)
             objRectScore.setOrigin(0)
@@ -70,7 +86,7 @@ export class SceneSpeed extends InGameScene {
                 for (let i = 0; i < cardCount; i++) {
                     const objImgDeckBottom = this.add.image(19, 512, CARDS.BACK)
                     // 相手のデッキ表示位置
-                    if (!this.isMyself(player)) {
+                    if (!isMyself) {
                         objImgDeckBottom.x = 286
                         objImgDeckBottom.y = 55
                     }
@@ -80,7 +96,7 @@ export class SceneSpeed extends InGameScene {
                     objImgDeckBottom.setOrigin(0)
                     objImgDeckBottom.setInteractive()
                     // 一番上の1枚にクリック処理をつける
-                    if (this.isMyself(player) && i === cardCount - 1) {
+                    if (isMyself && i === cardCount - 1) {
                         objImgDeckBottom.on('pointerover', () => {
                             objImgDeckBottom.setTint(0x9999FF)
                         })
@@ -100,7 +116,7 @@ export class SceneSpeed extends InGameScene {
                 }
             }
             // 相手のスコア表示位置
-            if (!this.isMyself(player)) {
+            if (!isMyself) {
                 objRectScore.x = 218
                 objRectScore.y = 80
                 objTextScore.x = 243
@@ -126,10 +142,32 @@ export class SceneSpeed extends InGameScene {
                 objImgCard.setScale(70 / 136)
                 objImgCard.setOrigin(0)
                 objImgCard.x += offset * i
-                if (!this.isMyself(player)) {
+                if (!isMyself) {
                     objImgCard.y = 170
                 }
                 objImgCard.setVisible(false)
+                if (isMyself) {
+                    const isSelected = () => selectedSlot === i
+                    objImgCard.setInteractive()
+                    objImgCard.on('pointerover', () => {
+                        if (isSelected()) {
+                            return
+                        }
+                        objImgCard.setTint(0x9999FF)
+                    })
+                    objImgCard.on('pointerout', () => {
+                        if (isSelected()) {
+                            return
+                        }
+                        objImgCard.clearTint()
+                    })
+                    objImgCard.on('pointerup', () => {
+                        if (isSelected()) {
+                            return
+                        }
+                        setSelectedSlot(i)
+                    })
+                }
                 fieldCards[player.id][i] = objImgCard
             }
         })
