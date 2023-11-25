@@ -61,6 +61,25 @@ class BoardGameSpeed extends BoardGame {
             field[emptySlot] = picked
             io.to(this.room.id).emit('speed_set_field', playerIndex, emptySlot, picked)
         }
+        const handlePlace = (player, fieldSlot, centerSlot) => {
+            const fieldCards = getFieldCards(player)
+            const fieldCard = fieldCards[fieldSlot]
+            const centerCard = centerCards[centerSlot]
+            const getCardNum = (card) => parseInt(card.slice(-2))
+            const fieldNum = getCardNum(fieldCard)
+            const centerNum = getCardNum(centerCard)
+            const isPlaceable = () => true
+            if (isPlaceable()) {
+                const playerIndex = this.room.players.indexOf(player)
+                fieldCards[fieldSlot] = null
+                centerCards[centerSlot] = fieldCard
+                this.setScore(player, this.getScore(player) - 1)
+                io.to(this.room.id).emit('speed_set_field', playerIndex, fieldSlot, null)
+                io.to(this.room.id).emit('speed_set_center', playerIndex, centerSlot, fieldCard)
+                return true
+            }
+            return false
+        }
         const performBacchanko = () => {
             const playerIndex1 = 0
             const playerIndex2 = 1
@@ -86,6 +105,9 @@ class BoardGameSpeed extends BoardGame {
             console.log(player)
             socket.on('speed_pick_deck', () => {
                 handlePickDeck(player)
+            })
+            socket.on('speed_place', (fieldSlot, centerSlot, callback) => {
+                callback(handlePlace(player, fieldSlot, centerSlot))
             })
         })
     }

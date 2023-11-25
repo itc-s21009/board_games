@@ -42,18 +42,33 @@ export class SceneSpeed extends InGameScene {
                 }
             })
         }
+        const isFieldSelected = () => selectedSlot !== -1
         const leftCard = this.add.image(108, 284, CARDS.BACK)
         leftCard.setScale(70 / 136)
         leftCard.setOrigin(0)
         leftCard.setVisible(false)
+        registerCursorOverEvent(leftCard, isFieldSelected)
         centerCards[LEFT] = leftCard
-        registerCursorOverEvent(centerCards[LEFT])
         const rightCard = this.add.image(196, 284, CARDS.BACK)
         rightCard.setScale(70 / 136)
         rightCard.setOrigin(0)
         rightCard.setVisible(false)
+        registerCursorOverEvent(rightCard, isFieldSelected)
         centerCards[RIGHT] = rightCard
-        registerCursorOverEvent(centerCards[RIGHT])
+        const centerSlots = [LEFT, RIGHT]
+        centerSlots.forEach((centerSlot) => {
+            const centerCard = centerCards[centerSlot]
+            centerCard.on('pointerup', () => {
+                if (isFieldSelected()) {
+                    centerCard.clearTint()
+                    this.socketEmit('speed_place', selectedSlot, centerSlot, (success) => {
+                        if (success) {
+                            setSelectedSlot(-1)
+                        }
+                    })
+                }
+            })
+        })
         const setCard = (card, type) => {
             card.setData('card', type)
             if (type) {
@@ -73,10 +88,44 @@ export class SceneSpeed extends InGameScene {
                 card.y += offset
                 card.clearTint()
             }
-            const card = getFieldCard(this.getPlayer(), slot)
-            card.y -= offset
-            card.setTint(0xFFFF99)
+            if (slot !== -1) {
+                const card = getFieldCard(this.getPlayer(), slot)
+                card.y -= offset
+                card.setTint(0xFFFF99)
+            }
             selectedSlot = slot
+        }
+        const getScore = (player) => scores[player.id].getScore()
+        const setScore = (player, score) => scores[player.id].setScore(score)
+        // {player.id: image[]}
+        const objectsDeck = {}
+        const updateDeck = (player) => {
+            const deckCards = objectsDeck[player.id]
+            deckCards.forEach((deckCard) => {
+                deckCard.off('pointerover')
+                deckCard.off('pointerout')
+                deckCard.off('pointerup')
+                deckCard.setVisible(false)
+            })
+            // 5枚ごとに1枚表示する(26枚の場合は5枚に設定)
+            const fieldCardCount = fieldCards[player.id].filter((card) => card.getData('card') !== null).length
+            const deckCardCount = getScore(player) - fieldCardCount
+            const cardCount = deckCardCount >= 26 ? 5 : Math.ceil(deckCardCount / 5)
+            for (let i = 0; i < cardCount; i++) {
+                const deckCard = deckCards[i]
+                deckCard.setVisible(true)
+                // 一番上の1枚にクリック処理をつける
+                if (this.isMyself(player) && i === cardCount - 1) {
+                    registerCursorOverEvent(deckCard)
+                    deckCard.on('pointerup', () => {
+                        deckCard.clearTint()
+                        setTimeout(() => {
+                            deckCard.setTint(0x9999FF)
+                        }, 40)
+                        this.socketEmit('speed_pick_deck')
+                    })
+                }
+            }
         }
         this.players.forEach((player) => {
             const isMyself = this.isMyself(player)
@@ -89,16 +138,10 @@ export class SceneSpeed extends InGameScene {
             objTextName.setOrigin(0)
             const container = this.add.container(0, 0, [objRectScore, objTextScore])
 
-            const objectsDeck = []
             const drawDeck = () => {
-                objectsDeck.forEach((obj) => {
-                    obj.destroy()
-                    container.remove(obj)
-                })
-                // 5枚ごとに1枚表示する(26枚の場合は5枚に設定)
-                const cardCount = score >= 26 ? 5 : Math.ceil(score / 5)
                 const offset = 3
-                for (let i = 0; i < cardCount; i++) {
+                objectsDeck[player.id] = []
+                for (let i = 0; i < 5; i++) {
                     const objImgDeckBottom = this.add.image(19, 512, CARDS.BACK)
                     // 相手のデッキ表示位置
                     if (!isMyself) {
@@ -109,18 +152,7 @@ export class SceneSpeed extends InGameScene {
                     objImgDeckBottom.y -= offset*i
                     objImgDeckBottom.setScale(70 / 136)
                     objImgDeckBottom.setOrigin(0)
-                    // 一番上の1枚にクリック処理をつける
-                    if (isMyself && i === cardCount - 1) {
-                        registerCursorOverEvent(objImgDeckBottom)
-                        objImgDeckBottom.on('pointerup', () => {
-                            objImgDeckBottom.clearTint()
-                            setTimeout(() => {
-                                objImgDeckBottom.setTint(0x9999FF)
-                            }, 40)
-                            this.socketEmit('speed_pick_deck')
-                        })
-                    }
-                    objectsDeck.push(objImgDeckBottom)
+                    objectsDeck[player.id].push(objImgDeckBottom)
                     container.add(objImgDeckBottom)
                 }
             }
@@ -140,11 +172,11 @@ export class SceneSpeed extends InGameScene {
             container.setScore = (newScore) => {
                 score = newScore
                 objTextScore.text = score.toString()
-                drawDeck()
             }
-            drawDeck()
-            scores[player.id] = container
             fieldCards[player.id] = []
+            scores[player.id] = container
+            drawDeck()
+            updateDeck(player)
             const offset = 70
             for (let i = 0; i < 4; i++) {
                 const objImgCard = this.add.image(47, 399, CARDS.BACK)
@@ -167,8 +199,6 @@ export class SceneSpeed extends InGameScene {
                 fieldCards[player.id][i] = objImgCard
             }
         })
-        const getScore = (player) => scores[player.id].getScore()
-        const setScore = (player, score) => scores[player.id].setScore(score)
 
         this.socketEmit('ready')
 
@@ -178,7 +208,9 @@ export class SceneSpeed extends InGameScene {
         })
 
         this.socketOn('speed_set_field', (playerIndex, slot, type) => {
-            setFieldCard(this.players[playerIndex], slot, type)
+            const player = this.players[playerIndex]
+            setFieldCard(player, slot, type)
+            updateDeck(player)
         })
         this.socketOn('speed_set_center', (playerIndex, centerSlot, type) => {
             setCenterCard(centerSlot, type)
