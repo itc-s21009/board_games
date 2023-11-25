@@ -26,18 +26,19 @@ export class SceneSpeed extends InGameScene {
         const fieldCards = {}
         // 選択中のカード 0〜3
         let selectedSlot = -1
-        // {left: image, right: image}
-        const centerCards = {}
+        const [LEFT, RIGHT] = [0, 1]
+        // [leftCardImage, rightCardImage]
+        const centerCards = []
         const leftCard = this.add.image(108, 284, CARDS.BACK)
         leftCard.setScale(70 / 136)
         leftCard.setOrigin(0)
         leftCard.setVisible(false)
-        centerCards.left = leftCard
+        centerCards[LEFT] = leftCard
         const rightCard = this.add.image(196, 284, CARDS.BACK)
         rightCard.setScale(70 / 136)
         rightCard.setOrigin(0)
         rightCard.setVisible(false)
-        centerCards.right = rightCard
+        centerCards[RIGHT] = rightCard
         const setCard = (card, type) => {
             card.setData('card', type)
             if (type) {
@@ -47,8 +48,7 @@ export class SceneSpeed extends InGameScene {
                 card.setVisible(false)
             }
         }
-        const setLeftCard = (type) => setCard(leftCard, type)
-        const setRightCard = (type) => setCard(rightCard, type)
+        const setCenterCard = (centerSlot, type) => setCard(centerCards[centerSlot], type)
         const getFieldCard = (player, slot) => fieldCards[player.id][slot]
         const setFieldCard = (player, slot, type) => setCard(getFieldCard(player, slot), type)
         const setSelectedSlot = (slot) => {
@@ -184,11 +184,8 @@ export class SceneSpeed extends InGameScene {
         this.socketOn('speed_set_field', (playerIndex, slot, type) => {
             setFieldCard(this.players[playerIndex], slot, type)
         })
-        this.socketOn('speed_set_left', (type) => {
-            setLeftCard(type)
-        })
-        this.socketOn('speed_set_right', (type) => {
-            setRightCard(type)
+        this.socketOn('speed_set_center', (playerIndex, centerSlot, type) => {
+            setCenterCard(centerSlot, type)
         })
     }
 }

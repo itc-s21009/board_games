@@ -12,8 +12,9 @@ class BoardGameSpeed extends BoardGame {
         const decks = {}
         // {player.id: card[]}
         const fieldCards = {}
-        // {left: card, right: card}
-        const centerCards = {}
+        const [LEFT, RIGHT] = [0, 1]
+        // [leftCard, rightCard]
+        const centerCards = []
         const init = () => {
             const player1 = this.room.players[0]
             const player2 = this.room.players[1]
@@ -30,8 +31,8 @@ class BoardGameSpeed extends BoardGame {
             decks[player2.id] = shuffle(deck2)
             fieldCards[player1.id] = new Array(4).fill(null)
             fieldCards[player2.id] = new Array(4).fill(null)
-            centerCards.left = null
-            centerCards.right = null
+            centerCards[LEFT] = null
+            centerCards[RIGHT] = null
             this.setScore(player1, 26)
             this.setScore(player2, 26)
         }
@@ -61,12 +62,16 @@ class BoardGameSpeed extends BoardGame {
             io.to(this.room.id).emit('speed_set_field', playerIndex, emptySlot, picked)
         }
         const performBacchanko = () => {
-            const player1 = this.room.players[0]
-            const player2 = this.room.players[1]
+            const playerIndex1 = 0
+            const playerIndex2 = 1
+            const player1 = this.room.players[playerIndex1]
+            const player2 = this.room.players[playerIndex2]
             const topCard1 = pickFromDeck(player1)
             const topCard2 = pickFromDeck(player2)
-            io.to(this.room.id).emit('speed_set_left', topCard1)
-            io.to(this.room.id).emit('speed_set_right', topCard2)
+            centerCards[LEFT] = topCard1
+            centerCards[RIGHT] = topCard2
+            io.to(this.room.id).emit('speed_set_center', playerIndex1, LEFT, topCard1)
+            io.to(this.room.id).emit('speed_set_center', playerIndex2, RIGHT, topCard2)
             this.setScore(player1, this.getScore(player1) - 1)
             this.setScore(player2, this.getScore(player2) - 1)
             if (this.getScore(player1) <= 0 || this.getScore(player2) <= 0) {
