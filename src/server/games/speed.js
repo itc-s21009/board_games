@@ -45,6 +45,9 @@ class BoardGameSpeed extends BoardGame {
             }
             return deck.splice(0, 1)[0]
         }
+        const isPlaceable = (a, b) => Math.abs(a - b) <= 1 ||
+            (a === 1 && b === 13) ||
+            (a === 13 && b === 1)
         const handlePickDeck = (player) => {
             const field = getFieldCards(player)
             const emptySlot = field.indexOf(null)
@@ -68,8 +71,7 @@ class BoardGameSpeed extends BoardGame {
             const getCardNum = (card) => parseInt(card.slice(-2))
             const fieldNum = getCardNum(fieldCard)
             const centerNum = getCardNum(centerCard)
-            const isPlaceable = () => true
-            if (isPlaceable()) {
+            if (isPlaceable(fieldNum, centerNum)) {
                 const playerIndex = this.room.players.indexOf(player)
                 fieldCards[fieldSlot] = null
                 centerCards[centerSlot] = fieldCard
