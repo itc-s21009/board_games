@@ -29,16 +29,31 @@ export class SceneSpeed extends InGameScene {
         const [LEFT, RIGHT] = [0, 1]
         // [leftCardImage, rightCardImage]
         const centerCards = []
+        const registerCursorOverEvent = (objCard, conditionFunc = () => true) => {
+            objCard.setInteractive()
+            objCard.on('pointerover', () => {
+                if (conditionFunc()) {
+                    objCard.setTint(0x9999FF)
+                }
+            })
+            objCard.on('pointerout', () => {
+                if (conditionFunc()) {
+                    objCard.clearTint()
+                }
+            })
+        }
         const leftCard = this.add.image(108, 284, CARDS.BACK)
         leftCard.setScale(70 / 136)
         leftCard.setOrigin(0)
         leftCard.setVisible(false)
         centerCards[LEFT] = leftCard
+        registerCursorOverEvent(centerCards[LEFT])
         const rightCard = this.add.image(196, 284, CARDS.BACK)
         rightCard.setScale(70 / 136)
         rightCard.setOrigin(0)
         rightCard.setVisible(false)
         centerCards[RIGHT] = rightCard
+        registerCursorOverEvent(centerCards[RIGHT])
         const setCard = (card, type) => {
             card.setData('card', type)
             if (type) {
@@ -94,15 +109,9 @@ export class SceneSpeed extends InGameScene {
                     objImgDeckBottom.y -= offset*i
                     objImgDeckBottom.setScale(70 / 136)
                     objImgDeckBottom.setOrigin(0)
-                    objImgDeckBottom.setInteractive()
                     // 一番上の1枚にクリック処理をつける
                     if (isMyself && i === cardCount - 1) {
-                        objImgDeckBottom.on('pointerover', () => {
-                            objImgDeckBottom.setTint(0x9999FF)
-                        })
-                        objImgDeckBottom.on('pointerout', () => {
-                            objImgDeckBottom.clearTint()
-                        })
+                        registerCursorOverEvent(objImgDeckBottom)
                         objImgDeckBottom.on('pointerup', () => {
                             objImgDeckBottom.clearTint()
                             setTimeout(() => {
@@ -147,25 +156,12 @@ export class SceneSpeed extends InGameScene {
                 }
                 objImgCard.setVisible(false)
                 if (isMyself) {
-                    const isSelected = () => selectedSlot === i
-                    objImgCard.setInteractive()
-                    objImgCard.on('pointerover', () => {
-                        if (isSelected()) {
-                            return
-                        }
-                        objImgCard.setTint(0x9999FF)
-                    })
-                    objImgCard.on('pointerout', () => {
-                        if (isSelected()) {
-                            return
-                        }
-                        objImgCard.clearTint()
-                    })
+                    const isNotSelected = () => selectedSlot !== i
+                    registerCursorOverEvent(objImgCard, isNotSelected)
                     objImgCard.on('pointerup', () => {
-                        if (isSelected()) {
-                            return
+                        if (isNotSelected()) {
+                            setSelectedSlot(i)
                         }
-                        setSelectedSlot(i)
                     })
                 }
                 fieldCards[player.id][i] = objImgCard
