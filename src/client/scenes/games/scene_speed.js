@@ -215,6 +215,40 @@ export class SceneSpeed extends InGameScene {
         this.socketOn('speed_set_center', (playerIndex, centerSlot, type) => {
             setCenterCard(centerSlot, type)
         })
+        this.socketOn('speed_bacchanko_select', () => {
+            setSelectedSlot(-1)
+            const objBlur = drawBlur(this)
+            const objects = [objBlur]
+            const offset = 70
+            const player = this.getPlayer()
+            let selectedCard
+            let selectedSlot = -1
+            for (let i = 0; i < 4; i++) {
+                const fieldCard = getFieldCard(player, i)
+                if (!fieldCard || !fieldCard.getData('card')) {
+                    continue
+                }
+                const objImgCard = this.add.image(47, 399, fieldCard.getData('card'))
+                objImgCard.setScale(70 / 136)
+                objImgCard.setOrigin(0)
+                objImgCard.x += offset * i
+                const isNotSelected = () => selectedSlot !== i
+                registerCursorOverEvent(objImgCard, isNotSelected)
+                objImgCard.on('pointerup', () => {
+                    if (isNotSelected()) {
+                        if (selectedCard) {
+                            selectedCard.clearTint()
+                        }
+                        selectedSlot = i
+                        selectedCard = objImgCard
+                        objImgCard.setTint(0xFF99FF)
+                        this.socketEmit('speed_bacchanko_select', selectedSlot)
+                    }
+                })
+                objects.push(objImgCard)
+            }
+            setTimeout(() => objects.forEach((obj) => obj.destroy()), 5000)
+        })
         this.socketOn('speed_bacchanko_countdown', () => {
             let count = 3
             const objBlur = drawBlur(this)

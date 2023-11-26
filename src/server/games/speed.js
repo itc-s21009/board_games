@@ -7,7 +7,7 @@ class BoardGameSpeed extends BoardGame {
     }
 
     start() {
-        const io = this.server.io
+        const {io, getSocket} = this.server
         // {player.id: card[]}
         const decks = {}
         // {player.id: card[]}
@@ -16,13 +16,36 @@ class BoardGameSpeed extends BoardGame {
         // [leftCard, rightCard]
         const centerCards = []
         let timerForBacchankoId
+        const prepareSlotThenBacchanko = () => {
+            const player1 = this.room.players[0]
+            const player2 = this.room.players[1]
+            // {playerId: slot}
+            const slots = {};
+            const setSlot = (player, slot) => slots[player.id] = slot
+            this.room.players.forEach((player) => {
+                const socket = getSocket(player)
+                if (decks[player.id].length <= 0) {
+                    socket.emit('speed_bacchanko_select')
+                    socket.on('speed_bacchanko_select', (slot) => setSlot(player, slot))
+                } else {
+                    slots[player.id] = -1
+                }
+            })
+            setTimeout(() => {
+                this.room.players.forEach((player) => {
+                    getSocket(player).off('speed_bacchanko_select', (slot) => setSlot(player, slot))
+                })
+                // 選択されなかった場合はundefinedなので、その場合は一番左側にあるカードを出す
+                let player1Slot = slots[player1.id] ?? [0,1,2,3].filter((i) => getFieldCards(player1)[i] !== null)[0]
+                let player2Slot = slots[player2.id] ?? [0,1,2,3].filter((i) => getFieldCards(player2)[i] !== null)[0]
+                startBacchankoCountdown(player1Slot, player2Slot)
+            }, 5000)
+        }
         const resetTimerForBacchanko = () => {
             if (timerForBacchankoId) {
                 clearTimeout(timerForBacchankoId)
             }
-            timerForBacchankoId = setTimeout(() => {
-                startBacchankoCountdown()
-            }, 7000)
+            timerForBacchankoId = setTimeout(prepareSlotThenBacchanko, 7000)
         }
         const init = () => {
             const player1 = this.room.players[0]
@@ -88,21 +111,32 @@ class BoardGameSpeed extends BoardGame {
                 io.to(this.room.id).emit('speed_set_field', playerIndex, fieldSlot, null)
                 io.to(this.room.id).emit('speed_set_center', playerIndex, centerSlot, fieldCard)
                 resetTimerForBacchanko()
+                if (this.getScore(player) <= 0) {
+                    this.handleEnd()
+                }
                 return true
             }
             return false
         }
-        const performBacchanko = () => {
-            const playerIndex1 = 0
-            const playerIndex2 = 1
-            const player1 = this.room.players[playerIndex1]
-            const player2 = this.room.players[playerIndex2]
-            const topCard1 = pickFromDeck(player1)
-            const topCard2 = pickFromDeck(player2)
-            centerCards[LEFT] = topCard1
-            centerCards[RIGHT] = topCard2
-            io.to(this.room.id).emit('speed_set_center', playerIndex1, LEFT, topCard1)
-            io.to(this.room.id).emit('speed_set_center', playerIndex2, RIGHT, topCard2)
+        const performBacchanko = (player1slot=-1, player2slot=-1) => {
+            const player1Index = 0
+            const player2Index = 1
+            const player1 = this.room.players[player1Index]
+            const player2 = this.room.players[player2Index]
+            const drawCard1 = player1slot !== -1 ? getFieldCards(player1)[player1slot] : pickFromDeck(player1)
+            const drawCard2 = player2slot !== -1 ? getFieldCards(player2)[player2slot] : pickFromDeck(player2)
+            if (player1slot !== -1) {
+                getFieldCards(player1)[player1slot] = null
+                io.to(this.room.id).emit('speed_set_field', player1Index, player1slot, null)
+            }
+            if (player2slot !== -1) {
+                getFieldCards(player2)[player2slot] = null
+                io.to(this.room.id).emit('speed_set_field', player2Index, player2slot, null)
+            }
+            centerCards[LEFT] = drawCard1
+            centerCards[RIGHT] = drawCard2
+            io.to(this.room.id).emit('speed_set_center', player1Index, LEFT, drawCard1)
+            io.to(this.room.id).emit('speed_set_center', player2Index, RIGHT, drawCard2)
             this.setScore(player1, this.getScore(player1) - 1)
             this.setScore(player2, this.getScore(player2) - 1)
             if (this.getScore(player1) <= 0 || this.getScore(player2) <= 0) {
@@ -111,11 +145,15 @@ class BoardGameSpeed extends BoardGame {
                 resetTimerForBacchanko()
             }
         }
-        const startBacchankoCountdown = () => {
+        const startBacchankoCountdown = (player1slot, player2slot) => {
             io.to(this.room.id).emit('speed_bacchanko_countdown')
-            setTimeout(performBacchanko, 3000)
+            setTimeout(() => performBacchanko(player1slot, player2slot), 3000)
         }
         init()
+        for (let i = 0; i < 4; i++) {
+            handlePickDeck(this.room.players[0])
+            handlePickDeck(this.room.players[1])
+        }
         startBacchankoCountdown()
 
         this.getRealPlayers().forEach((player) => {
