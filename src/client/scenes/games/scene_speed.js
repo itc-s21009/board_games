@@ -259,6 +259,12 @@ export class SceneSpeed extends InGameScene {
                 })
                 objects.push(objImgCard)
             }
+            const objRect = this.add.rectangle(1, 530, 374, 62, COLOR_GAME_SECOND)
+            objRect.setStrokeStyle(5, 0x000000)
+            objRect.setOrigin(0)
+            const objText = createText(this, WIDTH / 2, 545, '出すカードを選んでください', {color: 0xFFFFFF})
+            objText.setStroke('0x000000', 3)
+            objects.push(objRect, objText)
             setTimeout(() => objects.forEach((obj) => obj.destroy()), 5000)
         })
         this.socketOn('speed_bacchanko_countdown', () => {
