@@ -29,6 +29,7 @@ class BoardGameSpeed extends BoardGame {
                     socket.on('speed_bacchanko_select', (slot) => setSlot(player, slot))
                 } else {
                     slots[player.id] = -1
+                    socket.emit('speed_bacchanko_select_wait')
                 }
             })
             setTimeout(() => {

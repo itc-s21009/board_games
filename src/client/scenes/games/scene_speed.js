@@ -215,6 +215,17 @@ export class SceneSpeed extends InGameScene {
         this.socketOn('speed_set_center', (playerIndex, centerSlot, type) => {
             setCenterCard(centerSlot, type)
         })
+        this.socketOn('speed_bacchanko_select_wait', () => {
+            setSelectedSlot(-1)
+            const objBlur = drawBlur(this)
+            const objRect = this.add.rectangle(1, 300, 374, 62, COLOR_GAME_SECOND)
+            objRect.setStrokeStyle(5, 0x000000)
+            objRect.setOrigin(0)
+            const objText = createText(this, WIDTH / 2, 315, 'しばらくお待ちください', {color: 0xFFFFFF})
+            objText.setStroke('0x000000', 3)
+            const objects = [objBlur, objRect, objText]
+            setTimeout(() => objects.forEach((obj) => obj.destroy()), 5000)
+        })
         this.socketOn('speed_bacchanko_select', () => {
             setSelectedSlot(-1)
             const objBlur = drawBlur(this)
