@@ -15,6 +15,15 @@ class BoardGameSpeed extends BoardGame {
         const [LEFT, RIGHT] = [0, 1]
         // [leftCard, rightCard]
         const centerCards = []
+        let timerForBacchankoId
+        const resetTimerForBacchanko = () => {
+            if (timerForBacchankoId) {
+                clearTimeout(timerForBacchankoId)
+            }
+            timerForBacchankoId = setTimeout(() => {
+                startBacchankoCountdown()
+            }, 7000)
+        }
         const init = () => {
             const player1 = this.room.players[0]
             const player2 = this.room.players[1]
@@ -78,6 +87,7 @@ class BoardGameSpeed extends BoardGame {
                 this.setScore(player, this.getScore(player) - 1)
                 io.to(this.room.id).emit('speed_set_field', playerIndex, fieldSlot, null)
                 io.to(this.room.id).emit('speed_set_center', playerIndex, centerSlot, fieldCard)
+                resetTimerForBacchanko()
                 return true
             }
             return false
@@ -97,6 +107,8 @@ class BoardGameSpeed extends BoardGame {
             this.setScore(player2, this.getScore(player2) - 1)
             if (this.getScore(player1) <= 0 || this.getScore(player2) <= 0) {
                 this.handleEnd()
+            } else {
+                resetTimerForBacchanko()
             }
         }
         const startBacchankoCountdown = () => {
