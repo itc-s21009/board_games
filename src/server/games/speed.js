@@ -22,6 +22,7 @@ class BoardGameSpeed extends BoardGame {
             // {playerId: slot}
             const slots = {};
             const setSlot = (player, slot) => slots[player.id] = slot
+            const playersHaveDeck = []
             this.room.players.forEach((player) => {
                 const socket = getSocket(player)
                 if (decks[player.id].length <= 0) {
@@ -29,10 +30,10 @@ class BoardGameSpeed extends BoardGame {
                     socket.on('speed_bacchanko_select', (slot) => setSlot(player, slot))
                 } else {
                     slots[player.id] = -1
-                    socket.emit('speed_bacchanko_select_wait')
+                    playersHaveDeck.push(player)
                 }
             })
-            setTimeout(() => {
+            const bacchanko = () => {
                 this.room.players.forEach((player) => {
                     getSocket(player).off('speed_bacchanko_select', (slot) => setSlot(player, slot))
                 })
@@ -40,7 +41,13 @@ class BoardGameSpeed extends BoardGame {
                 let player1Slot = slots[player1.id] ?? [0,1,2,3].filter((i) => getFieldCards(player1)[i] !== null)[0]
                 let player2Slot = slots[player2.id] ?? [0,1,2,3].filter((i) => getFieldCards(player2)[i] !== null)[0]
                 startBacchankoCountdown(player1Slot, player2Slot)
-            }, 5000)
+            }
+            if (playersHaveDeck.length === 1) {
+                playersHaveDeck.forEach((player) => getSocket(player).emit('speed_bacchanko_select_wait'))
+                setTimeout(bacchanko, 5000)
+            } else {
+                bacchanko()
+            }
         }
         const resetTimerForBacchanko = () => {
             if (timerForBacchankoId) {
