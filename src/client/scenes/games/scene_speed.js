@@ -1,8 +1,8 @@
 import {InGameScene} from "./ingame_scene";
-import {SCENE_SPEED} from "../scene_loader";
+import {SCENE_SPEED, WIDTH} from "../scene_loader";
 import {CARDS} from "../../cards";
-import {COLOR_GAME_SECOND, COLOR_REVERSI_BACK} from "../../game";
-import {createText} from "../../components";
+import {COLOR_GAME_FIRST, COLOR_GAME_SECOND, COLOR_REVERSI_BACK} from "../../game";
+import {createCircleNumber, createText, drawBlur} from "../../components";
 
 export class SceneSpeed extends InGameScene {
     constructor() {
@@ -214,6 +214,22 @@ export class SceneSpeed extends InGameScene {
         })
         this.socketOn('speed_set_center', (playerIndex, centerSlot, type) => {
             setCenterCard(centerSlot, type)
+        })
+        this.socketOn('speed_bacchanko_countdown', () => {
+            let count = 3
+            const objBlur = drawBlur(this)
+            objBlur.setAlpha(0.01)
+            const objCircleCount = createCircleNumber(this, WIDTH / 2, 230, 40, COLOR_GAME_FIRST, count)
+            objCircleCount.setFontSize(64)
+            const timerId = setInterval(() => {
+                if (--count <= 0) {
+                    objCircleCount.destroy()
+                    objBlur.destroy()
+                    clearInterval(timerId)
+                    return
+                }
+                objCircleCount.setNumber(count)
+            }, 1000)
         })
     }
 }

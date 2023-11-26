@@ -99,8 +99,12 @@ class BoardGameSpeed extends BoardGame {
                 this.handleEnd()
             }
         }
+        const startBacchankoCountdown = () => {
+            io.to(this.room.id).emit('speed_bacchanko_countdown')
+            setTimeout(performBacchanko, 3000)
+        }
         init()
-        setTimeout(performBacchanko, 1000)
+        startBacchankoCountdown()
 
         this.getRealPlayers().forEach((player) => {
             const socket = this.server.getSocket(player)
