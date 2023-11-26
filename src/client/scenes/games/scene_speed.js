@@ -205,6 +205,7 @@ export class SceneSpeed extends InGameScene {
         this.socketOn('game_setscore', (playerIndex, score) => {
             const player = this.players[playerIndex]
             setScore(player, score)
+            updateDeck(player)
         })
 
         this.socketOn('speed_set_field', (playerIndex, slot, type) => {
