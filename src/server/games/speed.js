@@ -53,6 +53,9 @@ class BoardGameSpeed extends BoardGame {
             if (timerForBacchankoId) {
                 clearTimeout(timerForBacchankoId)
             }
+            if (this.ended) {
+                return
+            }
             timerForBacchankoId = setTimeout(prepareSlotThenBacchanko, 7000)
         }
         const init = () => {
