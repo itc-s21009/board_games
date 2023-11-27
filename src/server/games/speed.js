@@ -108,6 +108,9 @@ class BoardGameSpeed extends BoardGame {
             const fieldCards = getFieldCards(player)
             const fieldCard = fieldCards[fieldSlot]
             const centerCard = centerCards[centerSlot]
+            if (!fieldCard || !centerCard) {
+                return false
+            }
             const getCardNum = (card) => parseInt(card.slice(-2))
             const fieldNum = getCardNum(fieldCard)
             const centerNum = getCardNum(centerCard)
