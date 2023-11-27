@@ -134,7 +134,8 @@ export class SceneSpeed extends InGameScene {
             objRectScore.setOrigin(0)
             const objTextScore = createText(this, 127, 547, score.toString())
             objTextScore.setAlign('center')
-            const objTextName = createText(this, 162, 547, 'あなた')
+            const objTextName = createText(this, 162, 547, 'あなた', {color: 0xFFFFFF})
+            objTextName.setStroke('0x000000', 3)
             objTextName.setOrigin(0)
             const container = this.add.container(0, 0, [objRectScore, objTextScore])
 

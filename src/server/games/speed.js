@@ -17,6 +17,9 @@ class BoardGameSpeed extends BoardGame {
         const centerCards = []
         let timerForBacchankoId
         const prepareSlotThenBacchanko = () => {
+            if (this.ended) {
+                return
+            }
             const player1 = this.room.players[0]
             const player2 = this.room.players[1]
             // {playerId: slot}
@@ -52,9 +55,6 @@ class BoardGameSpeed extends BoardGame {
         const resetTimerForBacchanko = () => {
             if (timerForBacchankoId) {
                 clearTimeout(timerForBacchankoId)
-            }
-            if (this.ended) {
-                return
             }
             timerForBacchankoId = setTimeout(prepareSlotThenBacchanko, 7000)
         }
