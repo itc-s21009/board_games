@@ -1,5 +1,6 @@
 const BoardGame = require('./board_game')
 const {CARDS, shuffle} = require("../cards");
+const {EASY, NORMAL, HARD} = require("../cpuDifficulty");
 
 class BoardGameSpeed extends BoardGame {
     constructor(room, isRated, cpuSettings) {
@@ -22,11 +23,12 @@ class BoardGameSpeed extends BoardGame {
             }
             const player1 = this.room.players[0]
             const player2 = this.room.players[1]
+            this.getCpuPlayers().forEach((cpuPlayer) => cpuStopTick(cpuPlayer))
             // {playerId: slot}
             const slots = {};
             const setSlot = (player, slot) => slots[player.id] = slot
             const playersHaveDeck = []
-            this.room.players.forEach((player) => {
+            this.getRealPlayers().forEach((player) => {
                 const socket = getSocket(player)
                 if (decks[player.id].length <= 0) {
                     socket.emit('speed_bacchanko_select')
@@ -37,7 +39,7 @@ class BoardGameSpeed extends BoardGame {
                 }
             })
             const bacchanko = () => {
-                this.room.players.forEach((player) => {
+                this.getRealPlayers().forEach((player) => {
                     getSocket(player).off('speed_bacchanko_select', (slot) => setSlot(player, slot))
                 })
                 // 選択されなかった場合はundefinedなので、その場合は一番左側にあるカードを出す
@@ -80,6 +82,7 @@ class BoardGameSpeed extends BoardGame {
             this.setScore(player2, 26)
         }
 
+        const getCardNum = (card) => parseInt(card.slice(-2))
         const getFieldCards = (player) => fieldCards[player.id]
         const pickFromDeck = (player) => {
             const deck = decks[player.id]
@@ -114,7 +117,6 @@ class BoardGameSpeed extends BoardGame {
             if (!fieldCard || !centerCard) {
                 return false
             }
-            const getCardNum = (card) => parseInt(card.slice(-2))
             const fieldNum = getCardNum(fieldCard)
             const centerNum = getCardNum(centerCard)
             if (isPlaceable(fieldNum, centerNum)) {
@@ -157,6 +159,7 @@ class BoardGameSpeed extends BoardGame {
                 this.handleEnd()
             } else {
                 resetTimerForBacchanko()
+                this.getCpuPlayers().forEach((cpuPlayer) => cpuStartTick(cpuPlayer))
             }
         }
         const startBacchankoCountdown = (player1slot, player2slot) => {
@@ -180,6 +183,47 @@ class BoardGameSpeed extends BoardGame {
                 callback(handlePlace(player, fieldSlot, centerSlot))
             })
         })
+
+        const cpuStartTick = (cpuPlayer) => {
+            if (!this.isCpuPlayer(cpuPlayer)) {
+                return
+            }
+            const prop = this.getCpuProperty(cpuPlayer)
+            cpuStopTick(cpuPlayer)
+            const getInterval = (cpuPlayer) => ({
+                [EASY]: 2500,
+                [NORMAL]: 1500,
+                [HARD]: 500
+            }[this.getCpuProperty(cpuPlayer).difficulty])
+            prop.tickTimerId = setInterval(() => cpuHandleTick(cpuPlayer), getInterval(cpuPlayer))
+        }
+
+        const cpuStopTick = (cpuPlayer) => {
+            if (!this.isCpuPlayer(cpuPlayer)) {
+                return
+            }
+            const prop = this.getCpuProperty(cpuPlayer)
+            const timerId = prop.tickTimerId
+            if (timerId) {
+                clearInterval(timerId)
+            }
+        }
+
+        const cpuHandleTick = (cpuPlayer) => {
+            if (this.ended) {
+                cpuStopTick(cpuPlayer)
+                return
+            }
+            // 出ているカードで出せるものがあれば出す
+            const fieldCards = getFieldCards(cpuPlayer)
+            for (let i = 0; i < fieldCards.length; i++) {
+                if (handlePlace(cpuPlayer, i, LEFT) || handlePlace(cpuPlayer, i, RIGHT)) {
+                    return
+                }
+            }
+            // 出せるものがなければ山札から1枚引く
+            handlePickDeck(cpuPlayer)
+        }
     }
 }
 

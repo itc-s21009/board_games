@@ -42,7 +42,7 @@ export class InGameScene extends BoardGameScene {
     }
 
     isMyself(victim) {
-        return this.getPlayer().id.startsWith(victim.id)
+        return this.getPlayer().id.slice(0, 10) === victim.id.slice(0, 10)
     }
 
     onGameEnd(scoreboard) {

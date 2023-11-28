@@ -11,7 +11,7 @@ import {
     MODE_CPU,
     MODE_FRIEND_MATCH, socket
 } from "./game";
-import {HEIGHT, SCENE_MATCHING, SCENE_REVERSI, SCENE_SINKEI, WIDTH} from "./scenes/scene_loader";
+import {HEIGHT, SCENE_MATCHING, SCENE_REVERSI, SCENE_SINKEI, SCENE_SPEED, WIDTH} from "./scenes/scene_loader";
 import {EASY, HARD, NORMAL} from "./cpuDifficulty";
 
 const hexToStr = (hex) => `#${hex.toString(16)}`
@@ -128,6 +128,9 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
                                 break
                             case GAME_REVERSI.id:
                                 scene.moveTo(SCENE_REVERSI, data)
+                                break
+                            case GAME_SPEED.id:
+                                scene.moveTo(SCENE_SPEED, data)
                                 break
                             default:
                                 break

@@ -342,7 +342,7 @@ const registerListeners = (socket) => {
             difficulty: difficulty
         }
         startGame(roomId, false, cpuSettings)
-        callback(queues[roomId].players)
+        callback(queues[roomId].players.map((p) => ({id: p.id.substring(0, 10), name: p.name})))
     })
 
     socket.on('disconnecting', () => {
