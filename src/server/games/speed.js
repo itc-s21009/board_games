@@ -28,9 +28,9 @@ class BoardGameSpeed extends BoardGame {
             const slots = {};
             const setSlot = (player, slot) => slots[player.id] = slot
             const playersHaveDeck = []
-            this.getRealPlayers().forEach((player) => {
-                const socket = getSocket(player)
-                if (decks[player.id].length <= 0) {
+            this.room.players.forEach((player) => {
+                if (decks[player.id].length <= 0 && !this.isCpuPlayer(player)) {
+                    const socket = getSocket(player)
                     socket.emit('speed_bacchanko_select')
                     socket.on('speed_bacchanko_select', (slot) => setSlot(player, slot))
                 } else {
