@@ -222,7 +222,7 @@ const dequeuePlayersAndGo = (roomId) => {
             io.to(roomId).emit('match_go')
             startGame(roomId, isRated)
         }
-    }, 10000)
+    }, 5000)
 }
 
 const getPlayer = (socket) => {
