@@ -35,15 +35,31 @@ export class SceneSinkei extends InGameScene {
         let drawCount = 0
         let isMyTurn = false
 
-        const setCard = (x, y, type) => {
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+        const makeAnimation = async (card, type) => {
+            const animDuration = 100
+            const scaleX = card.scaleX
+            this.tweens.add({
+                targets: card,
+                scaleX: 0,
+                duration: animDuration
+            })
+            await sleep(animDuration)
+            card.setTexture(type)
+            card.setData('card', type)
+            this.tweens.add({
+                targets: card,
+                scaleX: scaleX,
+                duration: animDuration
+            })
+            await sleep(animDuration)
+        }
+        const setCard = async (x, y, type) => {
             cards[y][x].type = type
             if (cards[y][x].object) {
                 cards[y][x].object.clearTint()
                 if (type) {
-                    const scale = cards[y][x].object.scaleX
-                    cards[y][x].object.setTexture(type)
-                    cards[y][x].object.setScale(scale)
-                    cards[y][x].object.setData('card', type)
+                    await makeAnimation(cards[y][x].object, type)
                 } else {
                     cards[y][x].object.destroy()
                     delete cards[y][x].object
