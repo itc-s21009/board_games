@@ -43,13 +43,26 @@ export class SceneSpeed extends InGameScene {
             })
         }
         const isFieldSelected = () => selectedSlot !== -1
-        const leftCard = this.add.image(108, 284, CARDS.BACK)
+        const getFieldPosition = (player, slot) => {
+            const isMyself = this.isMyself(player)
+            if (slot === -1) {
+                return isMyself ? {x: 19, y: 512} : {x: 286, y: 55}
+            }
+            const offset = 70
+            let x = 47 + offset*slot
+            let y = isMyself ? 399 : 170
+            return {x, y}
+        }
+        const getCenterPosition = (slot) => slot === LEFT ? ({x: 108, y: 284}) : ({x: 196, y: 284})
+        const leftPos = getCenterPosition(LEFT)
+        const leftCard = this.add.image(leftPos.x, leftPos.y, CARDS.BACK)
         leftCard.setScale(70 / 136)
         leftCard.setOrigin(0)
         leftCard.setVisible(false)
         registerCursorOverEvent(leftCard, isFieldSelected)
         centerCards[LEFT] = leftCard
-        const rightCard = this.add.image(196, 284, CARDS.BACK)
+        const rightPos = getCenterPosition(RIGHT)
+        const rightCard = this.add.image(rightPos.x, rightPos.y, CARDS.BACK)
         rightCard.setScale(70 / 136)
         rightCard.setOrigin(0)
         rightCard.setVisible(false)
@@ -69,6 +82,25 @@ export class SceneSpeed extends InGameScene {
                 }
             })
         })
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+        const makeAnimation = async (from, to, type) => {
+            if (!type) {
+                return
+            }
+            const dummyCard = this.add.image(from.x, from.y, type)
+            dummyCard.setScale(70 / 136)
+            dummyCard.setOrigin(0)
+            const animDuration = 200
+            this.tweens.add({
+                targets: dummyCard,
+                x: to.x,
+                y: to.y,
+                ease: Phaser.Math.Easing.Cubic.In,
+                duration: animDuration
+            })
+            await sleep(animDuration)
+            dummyCard.destroy()
+        }
         const setCard = (card, type) => {
             card.setData('card', type)
             if (type) {
@@ -209,12 +241,15 @@ export class SceneSpeed extends InGameScene {
             updateDeck(player)
         })
 
-        this.socketOn('speed_set_field', (playerIndex, slot, type) => {
+        this.socketOn('speed_set_field', async (playerIndex, slot, type) => {
             const player = this.players[playerIndex]
+            await makeAnimation(getFieldPosition(player, -1), getFieldPosition(player, slot), type)
             setFieldCard(player, slot, type)
             updateDeck(player)
         })
-        this.socketOn('speed_set_center', (playerIndex, centerSlot, type) => {
+        this.socketOn('speed_set_center', async (playerIndex, fieldSlot, centerSlot, type) => {
+            const player = this.players[playerIndex]
+            await makeAnimation(getFieldPosition(player, fieldSlot), getCenterPosition(centerSlot), type)
             setCenterCard(centerSlot, type)
         })
         this.socketOn('speed_bacchanko_select_wait', () => {

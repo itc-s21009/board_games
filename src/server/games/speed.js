@@ -129,7 +129,7 @@ class BoardGameSpeed extends BoardGame {
                 centerCards[centerSlot] = fieldCard
                 this.setScore(player, this.getScore(player) - 1)
                 io.to(this.room.id).emit('speed_set_field', playerIndex, fieldSlot, null)
-                io.to(this.room.id).emit('speed_set_center', playerIndex, centerSlot, fieldCard)
+                io.to(this.room.id).emit('speed_set_center', playerIndex, fieldSlot, centerSlot, fieldCard)
                 resetTimerForBacchanko()
                 if (this.getScore(player) <= 0) {
                     this.handleEnd()
@@ -155,8 +155,8 @@ class BoardGameSpeed extends BoardGame {
             }
             centerCards[LEFT] = drawCard1
             centerCards[RIGHT] = drawCard2
-            io.to(this.room.id).emit('speed_set_center', player1Index, LEFT, drawCard1)
-            io.to(this.room.id).emit('speed_set_center', player2Index, RIGHT, drawCard2)
+            io.to(this.room.id).emit('speed_set_center', player1Index, player1slot, LEFT, drawCard1)
+            io.to(this.room.id).emit('speed_set_center', player2Index, player2slot, RIGHT, drawCard2)
             this.setScore(player1, this.getScore(player1) - 1)
             this.setScore(player2, this.getScore(player2) - 1)
             if (this.getScore(player1) <= 0 || this.getScore(player2) <= 0) {
