@@ -54,6 +54,23 @@ export class SceneSinkei extends InGameScene {
             })
             await sleep(animDuration)
         }
+        const makeGetAnimation = (card, player) => {
+            const scoreContainer = scores[player.id]
+            const {x, y} = scoreContainer
+            const animDuration = 1500
+            const dummyCard = this.add.image(card.x, card.y, card.texture)
+            dummyCard.setScale(card.scaleX, card.scaleY)
+            this.tweens.add({
+                targets: dummyCard,
+                scaleX: 0,
+                scaleY: 0,
+                x: x,
+                y: y,
+                rotation: 360,
+                ease: Phaser.Math.Easing.Cubic.Out,
+                duration: animDuration
+            })
+        }
         const setCard = async (x, y, type) => {
             cards[y][x].type = type
             if (cards[y][x].object) {
@@ -211,7 +228,10 @@ export class SceneSinkei extends InGameScene {
             setCard(x, y, null)
         })
         this.socketOn('sinkei_result', (pos1, pos2, isEqual) => {
-
+            if (isEqual) {
+                makeGetAnimation(cards[pos1.y][pos1.x].object, drawer)
+                makeGetAnimation(cards[pos2.y][pos2.x].object, drawer)
+            }
         })
         this.socketOn('game_setscore', (playerIndex, score) => {
             const victim = this.players[playerIndex]
