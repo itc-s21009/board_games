@@ -37,6 +37,12 @@ export class SceneReversi extends InGameScene {
         const BLACK = 1
         const WHITE = 2
 
+        const TEXTURES = {
+            [BLACK]: 'black',
+            [WHITE]: 'white',
+            [NONE]: 'background'
+        }
+
         let MY_COLOR
 
         const player = this.getPlayer()
@@ -46,35 +52,57 @@ export class SceneReversi extends InGameScene {
 
         let pos = {x: 0, y: 0}
 
-        const setCell = (x, y, type) => {
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+        const makeFlipAnimation = async (x, y, type) => {
+            const obj = field[y][x].object
+            if (field[y][x].type === NONE) {
+                obj.setTexture(TEXTURES[type])
+                return
+            }
+            const scaleX = obj.scaleX
+            const scaleY = obj.scaleY
+            const openScale = 0.03
+            this.tweens.chain({
+                tweens: [{
+                    targets: obj,
+                    scaleX: scaleX + openScale,
+                    scaleY: scaleY + openScale,
+                    duration: 50
+                }, {
+                    targets: obj,
+                    scaleX: 0,
+                    duration: 100,
+                    onComplete: () => obj.setTexture(TEXTURES[type])
+                }, {
+                    targets: obj,
+                    scaleX: scaleX + openScale,
+                    duration: 100
+                }, {
+                    targets: obj,
+                    scaleX: scaleX,
+                    scaleY: scaleY,
+                    duration: 50
+                }]
+            })
+            await sleep(150)
+        }
+        const setCell = async (x, y, type) => {
             if (!field[y][x]) {
                 return
             }
             const objImg = field[y][x].object
+            await makeFlipAnimation(x, y, type)
             field[y][x].type = type
-            switch(type) {
-                case BLACK:
-                    objImg.setTexture('black')
-                    break
-                case WHITE:
-                    objImg.setTexture('white')
-                    break
-                case NONE:
-                    objImg.setTexture('background')
-                    break
-                default:
-                    break
-            }
             objImg.setInteractive()
             objImg.on('pointerover', () => {
                 if (field[y][x].type === NONE && isMyTurn) {
-                    objImg.setTexture(MY_COLOR === BLACK ? 'black' : 'white')
+                    objImg.setTexture(MY_COLOR === BLACK ? TEXTURES[BLACK] : TEXTURES[WHITE])
                     pos = {x, y}
                 }
             })
             objImg.on('pointerout', () => {
                 if (field[y][x].type === NONE && isMyTurn) {
-                    objImg.setTexture('background')
+                    objImg.setTexture(TEXTURES[NONE])
                     pos = null
                 }
             })
@@ -133,10 +161,10 @@ export class SceneReversi extends InGameScene {
                     .setStrokeStyle(2, 0x000000)
                     .setOrigin(0)
                 field[y][x] = {
-                    type: BLACK,
-                    object: this.add.image(37 + offset*x, 181 + offset*y, 'black')
+                    type: NONE,
+                    object: this.add.image(37 + offset*x, 181 + offset*y, TEXTURES[NONE])
                         .setOrigin(0.5)
-                        .setScale(0.3)
+                        .setScale(0.27)
                 }
                 setCell(x, y, NONE)
             }
@@ -181,7 +209,7 @@ export class SceneReversi extends InGameScene {
                 }
                 availablePositions.forEach(({x, y}) => {
                     const offset = 43
-                    const objImageHint = this.add.image(37 + offset*x, 181 + offset*y, MY_COLOR === BLACK ? 'black' : 'white')
+                    const objImageHint = this.add.image(37 + offset*x, 181 + offset*y, MY_COLOR === BLACK ? TEXTURES[BLACK] : TEXTURES[WHITE])
                         .setOrigin(0.5)
                         .setScale(0.08)
                     availableHintObjects.push(objImageHint)
@@ -192,7 +220,7 @@ export class SceneReversi extends InGameScene {
                 isMyTurn = false
                 if (pos) {
                     const {x, y} = pos
-                    field[y][x].object.setTexture('background')
+                    field[y][x].object.setTexture(TEXTURES[NONE])
                 }
                 availableHintObjects.splice(0).forEach((obj) => obj.destroy())
             }
@@ -206,9 +234,9 @@ export class SceneReversi extends InGameScene {
             this.add.rectangle(WIDTH / 2, 95, 44, 44, COLOR_REVERSI_BACK)
                 .setStrokeStyle(3, 0x000000)
                 .setOrigin(0.5, 0)
-            this.add.image(WIDTH / 2, 117, color === BLACK ? 'black' : 'white')
+            this.add.image(WIDTH / 2, 117, color === BLACK ? TEXTURES[BLACK] : TEXTURES[WHITE])
                 .setOrigin(0.5)
-                .setScale(0.3)
+                .setScale(0.27)
         })
         this.socketOn('reversi_set', ({x, y}, color) => {
             pos = null
