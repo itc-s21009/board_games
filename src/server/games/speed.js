@@ -29,10 +29,12 @@ class BoardGameSpeed extends BoardGame {
             const setSlot = (player, slot) => slots[player.id] = slot
             const playersHaveDeck = []
             this.room.players.forEach((player) => {
-                if (decks[player.id].length <= 0 && !this.isCpuPlayer(player)) {
-                    const socket = getSocket(player)
-                    socket.emit('speed_bacchanko_select')
-                    socket.on('speed_bacchanko_select', (slot) => setSlot(player, slot))
+                if (decks[player.id].length <= 0) {
+                    if (!this.isCpuPlayer(player)) {
+                        const socket = getSocket(player)
+                        socket.emit('speed_bacchanko_select')
+                        socket.on('speed_bacchanko_select', (slot) => setSlot(player, slot))
+                    }
                 } else {
                     slots[player.id] = -1
                     playersHaveDeck.push(player)
@@ -47,8 +49,10 @@ class BoardGameSpeed extends BoardGame {
                 let player2Slot = slots[player2.id] ?? [0,1,2,3].filter((i) => getFieldCards(player2)[i] !== null)[0]
                 startBacchankoCountdown(player1Slot, player2Slot)
             }
-            if (playersHaveDeck.length === 1) {
-                playersHaveDeck.forEach((player) => getSocket(player).emit('speed_bacchanko_select_wait'))
+            if (playersHaveDeck.length <= 1) {
+                playersHaveDeck
+                    .filter((player) => !this.isCpuPlayer(player))
+                    .forEach((player) => getSocket(player).emit('speed_bacchanko_select_wait'))
                 setTimeout(bacchanko, 5000)
             } else {
                 bacchanko()
