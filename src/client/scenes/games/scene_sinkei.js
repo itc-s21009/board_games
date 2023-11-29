@@ -39,18 +39,32 @@ export class SceneSinkei extends InGameScene {
         const makeAnimation = async (card, type) => {
             const animDuration = 100
             const scaleX = card.scaleX
-            this.tweens.add({
-                targets: card,
-                scaleX: 0,
-                duration: animDuration
-            })
-            await sleep(animDuration)
-            card.setTexture(type)
-            card.setData('card', type)
-            this.tweens.add({
-                targets: card,
-                scaleX: scaleX,
-                duration: animDuration
+            const scaleY = card.scaleY
+            const openScale = 0.05
+            this.tweens.chain({
+                tweens: [{
+                    targets: card,
+                    scaleX: scaleX + openScale,
+                    scaleY: scaleY + openScale,
+                    duration: 50
+                }, {
+                    targets: card,
+                    scaleX: 0,
+                    duration: animDuration,
+                    onComplete: () => {
+                        card.setTexture(type)
+                        card.setData('card', type)
+                    }
+                }, {
+                    targets: card,
+                    scaleX: scaleX + openScale,
+                    duration: animDuration
+                }, {
+                    targets: card,
+                    scaleX: scaleX,
+                    scaleY: scaleY,
+                    duration: 50
+                }]
             })
             await sleep(animDuration)
         }
