@@ -86,12 +86,12 @@ export class SceneReversi extends InGameScene {
             })
             await sleep(150)
         }
-        const setCell = async (x, y, type) => {
+        const setCell = (x, y, type) => {
             if (!field[y][x]) {
                 return
             }
             const objImg = field[y][x].object
-            await makeFlipAnimation(x, y, type)
+            makeFlipAnimation(x, y, type)
             field[y][x].type = type
             objImg.setInteractive()
             objImg.on('pointerover', () => {
