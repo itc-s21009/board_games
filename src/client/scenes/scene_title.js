@@ -9,7 +9,7 @@ export class SceneTitle extends BoardGameScene {
 
     create() {
         drawBackground(this)
-        createText(this, WIDTH/2, 85, 'ボードゲーム対戦', {fontSize: 40})
+        createText(this, WIDTH/2, 85, 'BOARD GAMES', {fontSize: 48})
         const btnPlay = createButton(this,WIDTH/2, 185, 275, 200, 0x21ABA5, 'プレイ')
         btnPlay.setOnClick(() => {
             this.moveTo(SCENE_SELECT_MODE)
