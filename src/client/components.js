@@ -50,6 +50,16 @@ export const drawWindow = (scene, x, y, width, height, color) => {
 export const drawGameDetail = (scene, gameData, mode=-1) => {
     const {title, description} = gameData
     const objBlur = drawBlur(scene)
+    if (gameData === GAME_DAIFUGO) {
+        const objWindow = drawWindow(scene, WIDTH / 2, HEIGHT / 2 - 150 / 2, 300, 150, COLOR_FIRST)
+        const objText = createText(scene, WIDTH / 2, HEIGHT / 2 - 30, 'ごめんなさい\n未完成です！')
+        objText.setOrigin(0.5)
+        const objBtnBack = createButton(scene, WIDTH / 2, HEIGHT / 2 + 10, 90, 50, COLOR_SECOND, '閉じる', {fontSize: 24})
+        objBtnBack.setOnClick(() => {
+            [objBlur, objWindow, objText, objBtnBack].forEach((obj) => obj.destroy())
+        })
+        return
+    }
     const objWindow = drawWindow(scene, WIDTH / 2, 110, 356, 436, COLOR_FIRST)
 
     const objTextTitle = createText(scene, WIDTH / 2, 131, title, {fontSize: 36})
