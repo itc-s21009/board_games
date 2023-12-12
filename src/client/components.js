@@ -77,6 +77,12 @@ export const drawGameDetail = (scene, gameData, mode=-1) => {
             objImgGame.setOrigin(0.5, 0)
             objects.push(objImgGame)
             break
+        case GAME_SPEED.id:
+            objImgGame = scene.add.image(188, 181, gameData.id)
+            objImgGame.setScale(0.33)
+            objImgGame.setOrigin(0.5, 0)
+            objects.push(objImgGame)
+            break
         default:
             break
     }
