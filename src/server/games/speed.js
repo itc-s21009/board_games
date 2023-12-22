@@ -179,7 +179,6 @@ class BoardGameSpeed extends BoardGame {
 
         this.getRealPlayers().forEach((player) => {
             const socket = this.server.getSocket(player)
-            console.log(player)
             socket.on('speed_pick_deck', () => {
                 handlePickDeck(player)
             })

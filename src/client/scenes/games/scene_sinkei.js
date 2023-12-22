@@ -116,7 +116,6 @@ export class SceneSinkei extends InGameScene {
             const objImg = this.add.image(cardX, cardY, type)
             objImg.setScale(scale)
             if (cards[y][x].object) {
-                console.log(`destroy object Y${y} X${x}`)
                 cards[y][x].object.destroy()
                 delete cards[y][x].object
             }

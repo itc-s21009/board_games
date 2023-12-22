@@ -382,7 +382,6 @@ const registerListeners = (socket) => {
                     ]
                 }).then((data) => {
                     data = data.map((d) => ({name: d.user.name, score: d.wins}))
-                    console.log(data)
                     callback(data)
                 })
                 break
