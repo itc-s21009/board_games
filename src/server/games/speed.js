@@ -53,16 +53,16 @@ class BoardGameSpeed extends BoardGame {
                 playersHaveDeck
                     .filter((player) => !this.isCpuPlayer(player))
                     .forEach((player) => getSocket(player).emit('speed_bacchanko_select_wait'))
-                setTimeout(bacchanko, 5000)
+                this.setTimeout(bacchanko, 5000)
             } else {
                 bacchanko()
             }
         }
         const resetTimerForBacchanko = () => {
             if (timerForBacchankoId) {
-                clearTimeout(timerForBacchankoId)
+                this.clearTimeout(timerForBacchankoId)
             }
-            timerForBacchankoId = setTimeout(prepareSlotThenBacchanko, 7000)
+            timerForBacchankoId = this.setTimeout(prepareSlotThenBacchanko, 7000)
         }
         const init = () => {
             const player1 = this.room.players[0]
@@ -168,7 +168,7 @@ class BoardGameSpeed extends BoardGame {
         }
         const startBacchankoCountdown = (player1slot, player2slot) => {
             io.to(this.room.id).emit('speed_bacchanko_countdown')
-            setTimeout(() => performBacchanko(player1slot, player2slot), 3000)
+            this.setTimeout(() => performBacchanko(player1slot, player2slot), 3000)
         }
         init()
         for (let i = 0; i < 4; i++) {
@@ -199,7 +199,7 @@ class BoardGameSpeed extends BoardGame {
                 [NORMAL]: 1500,
                 [HARD]: 500
             }[this.getCpuProperty(cpuPlayer).difficulty])
-            prop.tickTimerId = setInterval(() => cpuHandleTick(cpuPlayer), getInterval(cpuPlayer))
+            prop.tickTimerId = this.setInterval(() => cpuHandleTick(cpuPlayer), getInterval(cpuPlayer))
         }
 
         const cpuStopTick = (cpuPlayer) => {
@@ -209,7 +209,7 @@ class BoardGameSpeed extends BoardGame {
             const prop = this.getCpuProperty(cpuPlayer)
             const timerId = prop.tickTimerId
             if (timerId) {
-                clearInterval(timerId)
+                this.clearInterval(timerId)
             }
         }
 

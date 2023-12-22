@@ -37,18 +37,18 @@ class BoardGameReversi extends BoardGame {
 
         const setTimer = (sec) => {
             if (timerId) {
-                clearInterval(timerId)
+                this.clearInterval(timerId)
             }
             timerCount = sec
             io.to(this.room.id).emit('reversi_timer', sec)
             const task = () => {
                 if (--timerCount < 0) {
-                    clearInterval(timerId)
+                    this.clearInterval(timerId)
                     changeDrawer()
                 }
             }
             task()
-            timerId = setInterval(task, 1000)
+            timerId = this.setInterval(task, 1000)
         }
         const getChanges = (x, y, color) => {
             if (field[y][x] !== NONE) {
@@ -111,7 +111,7 @@ class BoardGameReversi extends BoardGame {
                 const oppositeColor = color === BLACK ? WHITE : BLACK
                 if (getPossibleCells(oppositeColor).length <= 0) {
                     // お互い置けない場合は強制終了
-                    clearInterval(timerId)
+                    this.clearInterval(timerId)
                     this.handleEnd()
                 } else {
                     // 相手が置ける場合は順番交代
@@ -123,7 +123,7 @@ class BoardGameReversi extends BoardGame {
             drawer = this.room.players[drawerPointer]
             setTimer(40)
             if (this.isCpuPlayer(drawer)) {
-                setTimeout(() => {
+                this.setTimeout(() => {
                     if (this.ended) {
                         return
                     }
@@ -211,7 +211,7 @@ class BoardGameReversi extends BoardGame {
                 this.setScore(player, myStones)
                 this.setScore(oppositePlayer, oppositeStones)
                 if (oppositeStones === 0 || myStones + oppositeStones === 64) {
-                    clearInterval(timerId)
+                    this.clearInterval(timerId)
                     this.handleEnd()
                 } else {
                     changeDrawer(true)

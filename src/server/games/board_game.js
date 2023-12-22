@@ -9,8 +9,10 @@ class BoardGame {
         this.includeCpu = cpuSettings ? cpuSettings.cpus > 0 : false
         this.playersJoined = [...room.players]
         this.scores = {}
+        this.taskIntervalIds = []
+        this.taskTimeoutIds = []
         this.duration = 0
-        this.durationTimerId = setInterval(() => this.duration++, 1000)
+        this.durationTimerId = this.setInterval(() => this.duration++, 1000)
         this.ended = false
 
         this.room.players.forEach((player) => {
@@ -284,7 +286,11 @@ class BoardGame {
             return
         }
         this.ended = true
-        clearInterval(this.durationTimerId)
+        this.clearInterval(this.durationTimerId)
+        this.taskIntervalIds.forEach((id) => clearInterval(id))
+        this.taskIntervalIds = []
+        this.taskTimeoutIds.forEach((id) => clearTimeout(id))
+        this.taskTimeoutIds = []
         const scoreboard = this.createScoreboard()
         await this.storeResultsToDatabase(this.room.gameData.id, scoreboard)
         this.server.io.to(this.room.id).emit('game_end', scoreboard)
@@ -294,6 +300,34 @@ class BoardGame {
             this.server.leaveRoom(socket, this.room.id)
             this.server.registerListeners(socket)
         })
+    }
+
+    setTimeout(callback, ms) {
+        const id = setTimeout(callback, ms)
+        this.taskTimeoutIds.push(id)
+        return id
+    }
+
+    clearTimeout(id) {
+        clearTimeout(id)
+        const index = this.taskTimeoutIds.indexOf(id)
+        if (index !== -1) {
+            this.taskTimeoutIds.splice(index, 1)
+        }
+    }
+
+    setInterval(callback, ms) {
+        const id = setInterval(callback, ms)
+        this.taskIntervalIds.push(id)
+        return id
+    }
+
+    clearInterval(id) {
+        clearInterval(id)
+        const index = this.taskIntervalIds.indexOf(id)
+        if (index !== -1) {
+            this.taskIntervalIds.splice(index, 1)
+        }
     }
 
     handleDisconnect(player)  {

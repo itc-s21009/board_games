@@ -57,20 +57,20 @@ class BoardGameSinkei extends BoardGame {
         let timerId
         const setTimer = (sec) => {
             if (timerId) {
-                clearInterval(timerId)
+                this.clearInterval(timerId)
             }
             timerCount = sec
             io.to(this.room.id).emit('sinkei_timer', sec)
             const task = () => {
                 if (--timerCount < 0) {
-                    clearInterval(timerId)
+                    this.clearInterval(timerId)
                     if (pos1) io.to(this.room.id).emit('sinkei_set', pos1, CARDS.BACK)
                     if (pos2) io.to(this.room.id).emit('sinkei_set', pos2, CARDS.BACK)
                     changeDrawer()
                 }
             }
             task()
-            timerId = setInterval(task, 1000)
+            timerId = this.setInterval(task, 1000)
         }
         const changeDrawer = (change = true) => {
             if (change) {
@@ -97,7 +97,7 @@ class BoardGameSinkei extends BoardGame {
             if (player.id === drawer.id) {
                 io.to(this.room.id).emit('sinkei_set', position, cards[y][x])
                 rememberCard(x, y, cards[y][x])
-                setTimeout(() => {
+                this.setTimeout(() => {
                     if (!pos1) {
                         pos1 = {x, y}
                     } else if (!pos2) {
@@ -114,7 +114,7 @@ class BoardGameSinkei extends BoardGame {
                             this.setScore(player, this.getScore(player) + 2)
                             cardsRemain -= 2
                             if (cardsRemain <= 0) {
-                                clearInterval(timerId)
+                                this.clearInterval(timerId)
                                 this.handleEnd()
                             } else {
                                 changeDrawer(false)
@@ -187,9 +187,9 @@ class BoardGameSinkei extends BoardGame {
                 return
             }
             const pickTwoCards = (pos1, pos2) =>
-                setTimeout(() => {
+                this.setTimeout(() => {
                     handlePick(cpuPlayer, pos1)
-                    setTimeout(() => {
+                    this.setTimeout(() => {
                         handlePick(cpuPlayer, pos2)
                     }, 500)
                 }, 1000);
